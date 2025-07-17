@@ -1,3 +1,4 @@
+// app/context/ProductContext.js - VERSIÓN CORREGIDA
 import React, { createContext, useContext, useReducer } from 'react';
 
 const ProductContext = createContext();
@@ -99,10 +100,10 @@ export const ProductProvider = ({ children }) => {
   return <ProductContext.Provider value={value}>{children}</ProductContext.Provider>;
 };
 
-export const useProducts = () => {
+export const useProductsContext = () => {
   const context = useContext(ProductContext);
   if (!context) {
-    throw new Error('useProducts must be used within a ProductProvider');
+    throw new Error('useProductsContext must be used within a ProductProvider');
   }
   return context;
 };

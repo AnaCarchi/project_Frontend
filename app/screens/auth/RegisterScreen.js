@@ -287,10 +287,11 @@ export default function RegisterScreen({ navigation }) {
             <View style={styles.loginContainer}>
               <Text style={styles.loginText}>¿Ya tienes cuenta? </Text>
               <Button
-                title="Inicia sesión"
-                variant="ghost"
-                size="small"
-              />
+              title="Inicia sesión"
+              variant="ghost"
+              size="small"
+              onPress={() => navigation.navigate('Login')} 
+               />
             </View>
           </View>
         </ScrollView>

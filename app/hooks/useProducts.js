@@ -1,3 +1,4 @@
+// app/hooks/useProducts.js - VERSIÓN CORREGIDA
 import { useState, useEffect } from 'react';
 import { productService } from '../services/productService';
 import Toast from 'react-native-toast-message';

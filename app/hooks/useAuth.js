@@ -1,3 +1,4 @@
+// app/hooks/useAuth.js - VERSIÓN SIMPLIFICADA
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 
