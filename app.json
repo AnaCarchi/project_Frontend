@@ -1,4 +1,3 @@
-
 {
   "expo": {
     "name": "Catálogo Ropa",
@@ -15,6 +14,7 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "platforms": ["ios", "android"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.tuempresa.catalogoropa",
