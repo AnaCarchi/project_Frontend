@@ -7,6 +7,7 @@ import {
   Alert,
   Modal,
   ScrollView,
+  Dimensions,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useCategories } from '../../hooks/useCategories';
@@ -17,6 +18,8 @@ import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import Card from '../../components/common/Card';
 import Loading from '../../components/common/Loading';
+
+const { width } = Dimensions.get('window');
 
 export default function AdminCategoriesScreen({ navigation }) {
   const {

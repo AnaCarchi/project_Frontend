@@ -14,7 +14,10 @@
     "assetBundlePatterns": [
       "**/*"
     ],
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.tuempresa.catalogoropa",
@@ -56,7 +59,8 @@
           "photosPermission": "La aplicación accede a tus fotos para permitirte seleccionar imágenes de productos y categorías.",
           "cameraPermission": "La aplicación accede a tu cámara para permitirte tomar fotos de productos y categorías."
         }
-      ]
+      ],
+      "expo-font"
     ]
   }
 }

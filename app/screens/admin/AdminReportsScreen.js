@@ -6,11 +6,15 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Dimensions,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import Card from '../../components/common/Card';
+
+const { width } = Dimensions.get('window');
+
 
 export default function AdminReportsScreen({ navigation }) {
   const [generating, setGenerating] = useState(null);

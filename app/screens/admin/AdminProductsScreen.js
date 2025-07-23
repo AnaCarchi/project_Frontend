@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  Dimensions,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useProducts } from '../../hooks/useProducts';
@@ -13,6 +14,8 @@ import Header from '../../components/common/Header';
 import ProductList from '../../components/product/ProductList';
 import ProductForm from '../../components/product/ProductForm';
 import Loading from '../../components/common/Loading';
+
+const { width } = Dimensions.get('window');
 
 export default function AdminProductsScreen({ navigation }) {
   const {

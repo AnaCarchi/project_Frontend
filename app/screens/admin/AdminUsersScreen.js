@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   RefreshControl,
+  Dimensions,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { userService } from '../../services/userService';
@@ -15,6 +16,8 @@ import { formatDate } from '../../utils/helpers';
 import Header from '../../components/common/Header';
 import Card from '../../components/common/Card';
 import Loading from '../../components/common/Loading';
+
+const { width } = Dimensions.get('window');
 
 export default function AdminUsersScreen({ navigation }) {
   const [users, setUsers] = useState([]);
