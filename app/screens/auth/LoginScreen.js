@@ -6,7 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Image,
+  Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -134,3 +134,86 @@ export default function LoginScreen({ navigation }) {
     </LinearGradient>
   );
 }
+
+const { width, height } = Dimensions.get('window');
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  scrollView: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: width * 0.05, // 5% del ancho
+    paddingVertical: height * 0.03, // 3% del alto
+    minHeight: height,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: height * 0.05, // 5% del alto
+  },
+  logoCircle: {
+    width: Math.min(width * 0.3, 120), // 30% del ancho máximo 120px
+    height: Math.min(width * 0.3, 120),
+    borderRadius: Math.min(width * 0.15, 60),
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: height * 0.025, // 2.5% del alto
+    shadowColor: colors.shadow,
+    shadowOffset: {
+      width: 0,
+      height: Math.min(height * 0.005, 4),
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: Math.min(width * 0.02, 8),
+    elevation: 8,
+  },
+  title: {
+    fontSize: Math.min(width * 0.08, 32), // Responsive font size
+    fontWeight: 'bold',
+    color: colors.surface,
+    marginBottom: height * 0.01, // 1% del alto
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: Math.min(width * 0.04, 16), // Responsive font size
+    color: colors.surface,
+    opacity: 0.9,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  formContainer: {
+    backgroundColor: colors.surface,
+    borderRadius: Math.min(width * 0.05, 20), // Responsive border radius
+    padding: width * 0.05, // 5% del ancho
+    shadowColor: colors.shadow,
+    shadowOffset: {
+      width: 0,
+      height: Math.min(height * 0.005, 4),
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: Math.min(width * 0.02, 8),
+    elevation: 5,
+  },
+  optionsContainer: {
+    alignItems: 'flex-end',
+    marginBottom: height * 0.03, // 3% del alto
+  },
+  loginButton: {
+    marginBottom: height * 0.025, // 2.5% del alto
+  },
+  registerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexWrap: 'wrap', // Permite que se envuelva en pantallas pequeñas
+  },
+  registerText: {
+    color: colors.textSecondary,
+    fontSize: Math.min(width * 0.035, 14), // Responsive font size
+  },
+});

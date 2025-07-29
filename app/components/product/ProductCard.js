@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, Dimensions } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../../styles/theme';
 import { formatPrice } from '../../utils/helpers';
 import Card from '../common/Card';
+
+const { width, height } = Dimensions.get('window');
 
 export default function ProductCard({ product, onPress, style }) {
   const [imageError, setImageError] = useState(false);
@@ -32,7 +34,7 @@ export default function ProductCard({ product, onPress, style }) {
           <View style={styles.placeholderImage}>
             <MaterialCommunityIcons
               name="image-outline"
-              size={40}
+              size={Math.min(width * 0.1, 40)} // Responsive icon size
               color={colors.textSecondary}
             />
           </View>
@@ -70,9 +72,10 @@ const styles = StyleSheet.create({
   card: {
     padding: 0,
     overflow: 'hidden',
+    minWidth: Math.min(width * 0.4, 160), // Mínimo 40% del ancho o 160px
   },
   imageContainer: {
-    height: 160,
+    height: Math.min(width * 0.4, 160), // Altura responsive basada en el ancho
     backgroundColor: colors.background,
     position: 'relative',
   },
@@ -87,33 +90,33 @@ const styles = StyleSheet.create({
   },
   stockBadge: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    top: width * 0.02, // 2% del ancho
+    right: width * 0.02, // 2% del ancho
+    width: Math.max(width * 0.06, 24), // Mínimo 24px
+    height: Math.max(width * 0.06, 24), // Mínimo 24px
+    borderRadius: Math.max(width * 0.03, 12), // Mínimo 12px
     justifyContent: 'center',
     alignItems: 'center',
   },
   stockText: {
     color: colors.surface,
-    fontSize: 10,
+    fontSize: Math.min(width * 0.025, 10), // Responsive font size
     fontWeight: 'bold',
   },
   content: {
-    padding: 12,
+    padding: width * 0.03, // 3% del ancho
   },
   productName: {
-    fontSize: 16,
+    fontSize: Math.min(width * 0.04, 16), // Responsive font size
     fontWeight: '600',
     color: colors.text,
-    marginBottom: 4,
-    lineHeight: 20,
+    marginBottom: height * 0.005, // 0.5% del alto
+    lineHeight: Math.min(width * 0.05, 20), // Responsive line height
   },
   categoryName: {
-    fontSize: 12,
+    fontSize: Math.min(width * 0.03, 12), // Responsive font size
     color: colors.textSecondary,
-    marginBottom: 8,
+    marginBottom: height * 0.01, // 1% del alto
   },
   priceContainer: {
     flexDirection: 'row',
@@ -121,19 +124,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   price: {
-    fontSize: 18,
+    fontSize: Math.min(width * 0.045, 18), // Responsive font size
     fontWeight: 'bold',
     color: colors.primary,
   },
   inactiveLabel: {
     backgroundColor: colors.error,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+    paddingHorizontal: width * 0.015, // 1.5% del ancho
+    paddingVertical: height * 0.002, // 0.2% del alto
+    borderRadius: Math.min(width * 0.01, 4), // Responsive border radius
   },
   inactiveLabelText: {
     color: colors.surface,
-    fontSize: 10,
+    fontSize: Math.min(width * 0.025, 10), // Responsive font size
     fontWeight: 'bold',
   },
 });

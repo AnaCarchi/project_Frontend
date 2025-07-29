@@ -163,3 +163,77 @@ export default function ProductsScreen({ navigation, route }) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  content: {
+    flex: 1,
+    padding: 16,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  searchInput: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    fontSize: 16,
+    color: colors.text,
+  },
+  categoryFiltersContainer: {
+    marginBottom: 16,
+  },
+  categoryFilters: {
+    paddingHorizontal: 4,
+  },
+  categoryFilter: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginHorizontal: 4,
+    backgroundColor: colors.surface,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  categoryFilterActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  categoryFilterText: {
+    fontSize: 14,
+    color: colors.text,
+    fontWeight: '500',
+  },
+  categoryFilterTextActive: {
+    color: colors.surface,
+  },
+  productsList: {
+    paddingBottom: 20,
+  },
+  productCard: {
+    flex: 1,
+    margin: 4,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  emptyText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+});

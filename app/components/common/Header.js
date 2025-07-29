@@ -1,8 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, StatusBar, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, StatusBar, TouchableOpacity, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../../styles/theme';
+
+const { width, height } = Dimensions.get('window');
 
 export default function Header({
   title,
@@ -24,7 +26,7 @@ export default function Header({
             <TouchableOpacity onPress={onLeftPress} style={styles.iconButton}>
               <MaterialCommunityIcons
                 name={leftIcon}
-                size={24}
+                size={Math.min(width * 0.06, 24)} // Responsive icon size
                 color={textColor}
               />
             </TouchableOpacity>
@@ -32,9 +34,13 @@ export default function Header({
         </View>
         
         <View style={styles.centerSection}>
-          <Text style={[styles.title, { color: textColor }]}>{title}</Text>
+          <Text style={[styles.title, { color: textColor }]} numberOfLines={1}>
+            {title}
+          </Text>
           {subtitle && (
-            <Text style={[styles.subtitle, { color: textColor }]}>{subtitle}</Text>
+            <Text style={[styles.subtitle, { color: textColor }]} numberOfLines={1}>
+              {subtitle}
+            </Text>
           )}
         </View>
         
@@ -43,7 +49,7 @@ export default function Header({
             <TouchableOpacity onPress={onRightPress} style={styles.iconButton}>
               <MaterialCommunityIcons
                 name={rightIcon}
-                size={24}
+                size={Math.min(width * 0.06, 24)} // Responsive icon size
                 color={textColor}
               />
             </TouchableOpacity>
@@ -61,34 +67,40 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    minHeight: 56,
+    paddingHorizontal: width * 0.04, // 4% del ancho
+    paddingVertical: height * 0.015, // 1.5% del alto
+    minHeight: Math.max(height * 0.07, 56), // Mínimo 56px
   },
   leftSection: {
-    width: 40,
+    width: Math.max(width * 0.1, 40), // Mínimo 40px
     alignItems: 'flex-start',
   },
   centerSection: {
     flex: 1,
     alignItems: 'center',
+    paddingHorizontal: width * 0.02, // 2% del ancho
   },
   rightSection: {
-    width: 40,
+    width: Math.max(width * 0.1, 40), // Mínimo 40px
     alignItems: 'flex-end',
   },
   iconButton: {
-    padding: 8,
+    padding: Math.min(width * 0.02, 8), // Responsive padding
+    borderRadius: Math.min(width * 0.04, 16), // Responsive border radius
+    minWidth: Math.max(width * 0.08, 32), // Touch target mínimo
+    minHeight: Math.max(width * 0.08, 32),
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   title: {
-    fontSize: 18,
+    fontSize: Math.min(width * 0.045, 18), // Responsive font size
     fontWeight: 'bold',
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: Math.min(width * 0.03, 12), // Responsive font size
     opacity: 0.8,
     textAlign: 'center',
-    marginTop: 2,
+    marginTop: height * 0.002, // 0.2% del alto
   },
 });

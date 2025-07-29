@@ -7,6 +7,7 @@ import {
   RefreshControl,
   TouchableOpacity,
   FlatList,
+  Dimensions,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
@@ -112,6 +113,7 @@ export default function HomeScreen({ navigation }) {
               <CategoryCard
                 category={item}
                 onPress={() => navigation.navigate('Products', { categoryId: item.id })}
+                horizontal
               />
             )}
             keyExtractor={(item) => item.id.toString()}
@@ -174,3 +176,82 @@ export default function HomeScreen({ navigation }) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  content: {
+    flex: 1,
+  },
+  section: {
+    marginBottom: 24,
+    paddingHorizontal: 16,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.text,
+  },
+  seeAllText: {
+    fontSize: 14,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  statCard: {
+    flex: 1,
+    borderLeftWidth: 4,
+  },
+  statContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.text,
+  },
+  statTitle: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 4,
+  },
+  horizontalList: {
+    paddingHorizontal: 4,
+  },
+  productsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  productCard: {
+    flex: 1,
+    minWidth: '47%',
+  },
+  quickActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  quickAction: {
+    alignItems: 'center',
+    padding: 16,
+  },
+  quickActionText: {
+    marginTop: 8,
+    fontSize: 12,
+    color: colors.text,
+    textAlign: 'center',
+  },
+});

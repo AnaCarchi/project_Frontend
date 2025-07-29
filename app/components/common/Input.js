@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../../styles/theme';
+
+const { width, height } = Dimensions.get('window');
 
 export default function Input({
   label,
@@ -36,7 +38,7 @@ export default function Input({
         <TouchableOpacity onPress={togglePasswordVisibility} style={styles.iconContainer}>
           <MaterialCommunityIcons
             name={showPassword ? 'eye-off' : 'eye'}
-            size={20}
+            size={Math.min(width * 0.05, 20)} // Responsive icon size
             color={colors.textSecondary}
           />
         </TouchableOpacity>
@@ -48,7 +50,7 @@ export default function Input({
         <TouchableOpacity onPress={onRightIconPress} style={styles.iconContainer}>
           <MaterialCommunityIcons
             name={rightIcon}
-            size={20}
+            size={Math.min(width * 0.05, 20)} // Responsive icon size
             color={colors.textSecondary}
           />
         </TouchableOpacity>
@@ -66,18 +68,23 @@ export default function Input({
         isFocused && styles.focused,
         error && styles.error,
         !editable && styles.disabled,
+        multiline && styles.multilineContainer,
       ]}>
         {leftIcon && (
           <View style={styles.iconContainer}>
             <MaterialCommunityIcons
               name={leftIcon}
-              size={20}
+              size={Math.min(width * 0.05, 20)} // Responsive icon size
               color={colors.textSecondary}
             />
           </View>
         )}
         <TextInput
-          style={[styles.input, inputStyle]}
+          style={[
+            styles.input, 
+            inputStyle,
+            multiline && styles.multilineInput,
+          ]}
           placeholder={placeholder}
           value={value}
           onChangeText={onChangeText}
@@ -91,6 +98,7 @@ export default function Input({
           autoCorrect={autoCorrect}
           editable={editable}
           placeholderTextColor={colors.textSecondary}
+          textAlignVertical={multiline ? 'top' : 'center'}
           {...props}
         />
         {renderRightIcon()}
@@ -102,13 +110,13 @@ export default function Input({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
+    marginBottom: height * 0.02, // 2% del alto
   },
   label: {
-    fontSize: 16,
+    fontSize: Math.min(width * 0.04, 16), // Responsive font size
     fontWeight: '600',
     color: colors.text,
-    marginBottom: 8,
+    marginBottom: height * 0.01, // 1% del alto
   },
   inputContainer: {
     flexDirection: 'row',
@@ -116,9 +124,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    minHeight: 48,
+    borderRadius: Math.min(width * 0.02, 8), // Responsive border radius
+    paddingHorizontal: width * 0.03, // 3% del ancho
+    minHeight: Math.max(height * 0.06, 48), // Mínimo 48px
+  },
+  multilineContainer: {
+    alignItems: 'flex-start',
+    paddingVertical: height * 0.015, // 1.5% del alto
+    minHeight: Math.max(height * 0.12, 96), // Mínimo 96px para multiline
   },
   focused: {
     borderColor: colors.primary,
@@ -133,16 +146,21 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 16,
+    fontSize: Math.min(width * 0.04, 16), // Responsive font size
     color: colors.text,
-    paddingVertical: 12,
+    paddingVertical: height * 0.015, // 1.5% del alto
+  },
+  multilineInput: {
+    minHeight: Math.max(height * 0.08, 64), // Mínimo 64px para texto multilinea
+    textAlignVertical: 'top',
   },
   iconContainer: {
-    marginHorizontal: 4,
+    marginHorizontal: width * 0.01, // 1% del ancho
+    padding: width * 0.01, // 1% del ancho
   },
   errorText: {
-    fontSize: 12,
+    fontSize: Math.min(width * 0.03, 12), // Responsive font size
     color: colors.error,
-    marginTop: 4,
+    marginTop: height * 0.005, // 0.5% del alto
   },
 });

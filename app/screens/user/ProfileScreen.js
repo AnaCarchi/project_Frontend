@@ -124,7 +124,6 @@ export default function ProfileScreen({ navigation }) {
             icon="lock"
             title="Cambiar contraseña"
             onPress={() => {
-              // TODO: Implementar cambio de contraseña
               Alert.alert('Próximamente', 'Esta función estará disponible pronto');
             }}
             showArrow
@@ -134,7 +133,6 @@ export default function ProfileScreen({ navigation }) {
             icon="bell"
             title="Notificaciones"
             onPress={() => {
-              // TODO: Implementar configuración de notificaciones
               Alert.alert('Próximamente', 'Esta función estará disponible pronto');
             }}
             showArrow
@@ -144,7 +142,6 @@ export default function ProfileScreen({ navigation }) {
             icon="help-circle"
             title="Ayuda y soporte"
             onPress={() => {
-              // TODO: Implementar ayuda
               Alert.alert('Próximamente', 'Esta función estará disponible pronto');
             }}
             showArrow
@@ -190,113 +187,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
-  imageContainer: {
-    height: width * 0.8,
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    marginBottom: 16,
-    overflow: 'hidden',
-  },
-  productImage: {
-    width: '100%',
-    height: '100%',
-  },
-  placeholderImage: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.background,
-  },
-  infoCard: {
-    marginBottom: 16,
-  },
-  titleSection: {
-    marginBottom: 16,
-  },
-  productName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.text,
-    marginBottom: 4,
-  },
-  categoryName: {
-    fontSize: 16,
-    color: colors.textSecondary,
-  },
-  priceSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  price: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: colors.primary,
-  },
-  stockBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  stockText: {
-    color: colors.surface,
-    fontWeight: '600',
-    fontSize: 12,
-  },
-  descriptionSection: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.text,
-    marginBottom: 12,
-  },
-  description: {
-    fontSize: 16,
-    color: colors.text,
-    lineHeight: 24,
-  },
-  detailsSection: {
-    marginBottom: 16,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  detailLabel: {
-    fontSize: 16,
-    color: colors.textSecondary,
-  },
-  detailValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  actionsSection: {
-    marginTop: 20,
-    marginBottom: 40,
-  },
-  actionButton: {
-    marginBottom: 12,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-  },
-  errorText: {
-    marginTop: 16,
-    fontSize: 18,
-    color: colors.error,
-    textAlign: 'center',
-  },
   userCard: {
     marginBottom: 20,
   },
@@ -338,6 +228,12 @@ const styles = StyleSheet.create({
   },
   settingsCard: {
     marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginBottom: 12,
   },
   profileItem: {
     flexDirection: 'row',

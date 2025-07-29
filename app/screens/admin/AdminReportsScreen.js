@@ -15,7 +15,6 @@ import Card from '../../components/common/Card';
 
 const { width } = Dimensions.get('window');
 
-
 export default function AdminReportsScreen({ navigation }) {
   const [generating, setGenerating] = useState(null);
 
@@ -75,7 +74,6 @@ export default function AdminReportsScreen({ navigation }) {
                   {
                     text: 'OK',
                     onPress: () => {
-                      // Aquí implementarías la descarga del reporte
                       console.log(`Downloading ${reportType.id} report in ${format} format`);
                     },
                   },
@@ -181,3 +179,104 @@ export default function AdminReportsScreen({ navigation }) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  content: {
+    flex: 1,
+  },
+  section: {
+    marginBottom: 20,
+    paddingHorizontal: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginBottom: 8,
+  },
+  sectionDescription: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 20,
+  },
+  reportsContainer: {
+    paddingHorizontal: 16,
+    gap: 16,
+  },
+  reportCard: {
+    padding: 20,
+  },
+  reportHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  reportIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  reportInfo: {
+    flex: 1,
+  },
+  reportTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginBottom: 4,
+  },
+  reportDescription: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 20,
+  },
+  reportActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  formatButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    gap: 8,
+  },
+  formatButtonGenerating: {
+    backgroundColor: colors.textSecondary,
+  },
+  formatButtonText: {
+    color: colors.surface,
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  infoCard: {
+    margin: 16,
+  },
+  infoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  infoTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginLeft: 8,
+  },
+  infoText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 20,
+  },
+});

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert, Dimensions } from 'react-native';
 import { colors } from '../../styles/theme';
 import { validation } from '../../utils/validation';
 import { imageService } from '../../services/imageService';
@@ -8,25 +8,29 @@ import Button from '../common/Button';
 import Card from '../common/Card';
 import ImagePickerComponent from '../common/ImagePicker';
 
+const { width, height } = Dimensions.get('window');
+
 export default function ProductForm({
-  initialProduct = {},
+  initialProduct = null, 
   categories = [],
   onSubmit,
   onCancel,
   loading = false,
   isEdit = false,
 }) {
+  // Inicialización más segura del estado
   const [formData, setFormData] = useState({
-    name: initialProduct.name || '',
-    description: initialProduct.description || '',
-    price: initialProduct.price?.toString() || '',
-    stock: initialProduct.stock?.toString() || '',
-    categoryId: initialProduct.categoryId?.toString() || '',
-    active: initialProduct.active !== undefined ? initialProduct.active : true,
-    imageUrl: initialProduct.imageUrl || null,
+    name: initialProduct?.name || '',
+    description: initialProduct?.description || '',
+    price: initialProduct?.price?.toString() || '',
+    stock: initialProduct?.stock?.toString() || '',
+    categoryId: initialProduct?.categoryId?.toString() || '',
+    active: initialProduct?.active !== undefined ? initialProduct.active : true,
+    imageUrl: initialProduct?.imageUrl || null,
   });
+  
   const [errors, setErrors] = useState({});
-  const [selectedImageUri, setSelectedImageUri] = useState(initialProduct.imageUrl || null);
+  const [selectedImageUri, setSelectedImageUri] = useState(initialProduct?.imageUrl || null);
   const [imageChanged, setImageChanged] = useState(false);
 
   const updateFormData = (field, value) => {
@@ -91,7 +95,7 @@ export default function ProductForm({
         active: formData.active,
       };
 
-      // Primero crear/actualizar el producto
+      // Llamar a onSubmit
       const result = await onSubmit(productData);
       
       // Si hay una nueva imagen y el producto se creó/actualizó exitosamente
@@ -113,7 +117,7 @@ export default function ProductForm({
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <Card style={styles.formCard}>
         <Text style={styles.title}>
           {isEdit ? 'Editar Producto' : 'Nuevo Producto'}
@@ -174,16 +178,37 @@ export default function ProductForm({
           />
         </View>
 
-        {/* Category Selector - Simplificado para el ejemplo */}
-        <Input
-          label="ID de Categoría *"
-          value={formData.categoryId}
-          onChangeText={(text) => updateFormData('categoryId', text)}
-          error={errors.categoryId}
-          placeholder="ID de la categoría"
-          keyboardType="numeric"
-          leftIcon="tag"
-        />
+        {/* Selector de categoría mejorado */}
+        <View style={styles.categorySection}>
+          <Text style={styles.sectionLabel}>Categoría *</Text>
+          {categories.length > 0 ? (
+            <View style={styles.categoryGrid}>
+              {categories.map((category) => (
+                <Button
+                  key={category.id}
+                  title={category.name}
+                  variant={formData.categoryId === category.id.toString() ? 'primary' : 'outline'}
+                  size="small"
+                  onPress={() => updateFormData('categoryId', category.id.toString())}
+                  style={styles.categoryButton}
+                />
+              ))}
+            </View>
+          ) : (
+            <Input
+              label="ID de Categoría *"
+              value={formData.categoryId}
+              onChangeText={(text) => updateFormData('categoryId', text)}
+              error={errors.categoryId}
+              placeholder="ID de la categoría"
+              keyboardType="numeric"
+              leftIcon="tag"
+            />
+          )}
+          {errors.categoryId && (
+            <Text style={styles.errorText}>{errors.categoryId}</Text>
+          )}
+        </View>
 
         <View style={styles.actions}>
           <Button
@@ -213,35 +238,53 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   formCard: {
-    margin: 16,
+    margin: width * 0.04, // 4% del ancho
   },
   title: {
-    fontSize: 24,
+    fontSize: Math.min(width * 0.06, 24), // Responsive font size
     fontWeight: 'bold',
     color: colors.text,
-    marginBottom: 24,
+    marginBottom: height * 0.03, // 3% del alto
     textAlign: 'center',
   },
   imageSection: {
-    marginBottom: 20,
+    marginBottom: height * 0.025, // 2.5% del alto
   },
   sectionLabel: {
-    fontSize: 16,
+    fontSize: Math.min(width * 0.04, 16), // Responsive font size
     fontWeight: '600',
     color: colors.text,
-    marginBottom: 8,
+    marginBottom: height * 0.01, // 1% del alto
   },
   row: {
     flexDirection: 'row',
-    gap: 12,
+    gap: width * 0.03, // 3% del ancho
   },
   halfInput: {
     flex: 1,
   },
+  categorySection: {
+    marginBottom: height * 0.02, // 2% del alto
+  },
+  categoryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: width * 0.02, // 2% del ancho
+    marginTop: height * 0.01, // 1% del alto
+  },
+  categoryButton: {
+    minWidth: width * 0.25, // 25% del ancho mínimo
+    marginBottom: height * 0.01, // 1% del alto
+  },
+  errorText: {
+    fontSize: Math.min(width * 0.03, 12), // Responsive font size
+    color: colors.error,
+    marginTop: height * 0.005, // 0.5% del alto
+  },
   actions: {
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 24,
+    gap: width * 0.03, // 3% del ancho
+    marginTop: height * 0.03, // 3% del alto
   },
   actionButton: {
     flex: 1,

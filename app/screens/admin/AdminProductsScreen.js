@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useProducts } from '../../hooks/useProducts';
+import { useCategories } from '../../hooks/useCategories';
 import { colors } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import ProductList from '../../components/product/ProductList';
@@ -26,9 +27,19 @@ export default function AdminProductsScreen({ navigation }) {
     deleteProduct,
     fetchProducts,
   } = useProducts();
+  
+  const { categories, loading: categoriesLoading, fetchCategories } = useCategories();
+  
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
+
+  // Cargar categorías al montar el componente
+  useEffect(() => {
+    if (categories.length === 0) {
+      fetchCategories();
+    }
+  }, []);
 
   const handleCreateProduct = () => {
     setEditingProduct(null);
@@ -64,13 +75,15 @@ export default function AdminProductsScreen({ navigation }) {
   const handleFormSubmit = async (productData) => {
     setFormLoading(true);
     try {
+      let result;
       if (editingProduct) {
-        await updateProduct(editingProduct.id, productData);
+        result = await updateProduct(editingProduct.id, productData);
       } else {
-        await createProduct(productData);
+        result = await createProduct(productData);
       }
       setShowForm(false);
       setEditingProduct(null);
+      return result; // Importante: retornar el resultado para el manejo de imágenes
     } catch (error) {
       Alert.alert(
         'Error',
@@ -78,6 +91,7 @@ export default function AdminProductsScreen({ navigation }) {
           ? 'No se pudo actualizar el producto'
           : 'No se pudo crear el producto'
       );
+      throw error; // Re-lanzar el error para que ProductForm lo maneje
     } finally {
       setFormLoading(false);
     }
@@ -107,6 +121,11 @@ export default function AdminProductsScreen({ navigation }) {
     );
   };
 
+  // Mostrar loading si están cargando las categorías
+  if (categoriesLoading) {
+    return <Loading text="Cargando datos..." />;
+  }
+
   if (showForm) {
     return (
       <View style={styles.container}>
@@ -117,6 +136,7 @@ export default function AdminProductsScreen({ navigation }) {
         />
         <ProductForm
           initialProduct={editingProduct}
+          categories={categories} // Pasar las categorías
           onSubmit={handleFormSubmit}
           onCancel={handleFormCancel}
           loading={formLoading}
@@ -153,7 +173,6 @@ export default function AdminProductsScreen({ navigation }) {
     </View>
   );
 }
-// Agregar estos estilos al final de AdminProductsScreen.js
 
 const styles = StyleSheet.create({
   container: {
@@ -165,11 +184,11 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    bottom: 24,
-    right: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    bottom: width * 0.06, // 6% del ancho
+    right: width * 0.06, // 6% del ancho
+    width: Math.max(width * 0.14, 56), // Mínimo 56px
+    height: Math.max(width * 0.14, 56), // Mínimo 56px
+    borderRadius: Math.max(width * 0.07, 28), // Mínimo 28px
     backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',

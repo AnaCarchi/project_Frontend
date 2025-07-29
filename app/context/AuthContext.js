@@ -2,7 +2,6 @@ import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '../utils/constants';
 
-
 const AuthContext = createContext();
 
 const initialState = {
@@ -15,6 +14,7 @@ const initialState = {
 const authReducer = (state, action) => {
   switch (action.type) {
     case 'LOGIN_SUCCESS':
+      console.log('AuthReducer LOGIN_SUCCESS:', action.payload);
       return {
         ...state,
         user: action.payload.user,
@@ -23,6 +23,7 @@ const authReducer = (state, action) => {
         isLoading: false,
       };
     case 'LOGOUT':
+      console.log('AuthReducer LOGOUT');
       return {
         ...state,
         user: null,
@@ -36,6 +37,7 @@ const authReducer = (state, action) => {
         isLoading: action.payload,
       };
     case 'RESTORE_SESSION':
+      console.log('AuthReducer RESTORE_SESSION:', action.payload);
       return {
         ...state,
         user: action.payload.user,
@@ -57,16 +59,27 @@ export const AuthProvider = ({ children }) => {
 
   const restoreSession = async () => {
     try {
+      console.log('Restaurando sesión...');
       const token = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
       const userData = await AsyncStorage.getItem(STORAGE_KEYS.USER);
       
+      console.log('Token encontrado:', !!token);
+      console.log('Datos de usuario encontrados:', !!userData);
+      
       if (token && userData) {
         const user = JSON.parse(userData);
+        console.log('Usuario restaurado:', {
+          username: user.username,
+          role: user.role,
+          email: user.email
+        });
+        
         dispatch({
           type: 'RESTORE_SESSION',
           payload: { user, token },
         });
       } else {
+        console.log('No hay sesión guardada');
         dispatch({ type: 'SET_LOADING', payload: false });
       }
     } catch (error) {
@@ -77,6 +90,12 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (userData, token) => {
     try {
+      console.log('Guardando login:', {
+        username: userData.username,
+        role: userData.role,
+        email: userData.email
+      });
+      
       await AsyncStorage.setItem(STORAGE_KEYS.TOKEN, token);
       await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData));
       
@@ -91,6 +110,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
+      console.log('Cerrando sesión...');
       await AsyncStorage.multiRemove([STORAGE_KEYS.TOKEN, STORAGE_KEYS.USER]);
       dispatch({ type: 'LOGOUT' });
     } catch (error) {

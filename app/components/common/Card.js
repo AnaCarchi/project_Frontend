@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { colors } from '../../styles/theme';
+
+const { width, height } = Dimensions.get('window');
 
 export default function Card({
   children,
@@ -40,19 +42,19 @@ export default function Card({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginVertical: 4,
-    marginHorizontal: 2,
+    borderRadius: Math.min(width * 0.03, 12), // Responsive border radius
+    padding: width * 0.04, // 4% del ancho
+    marginVertical: height * 0.005, // 0.5% del alto
+    marginHorizontal: width * 0.005, // 0.5% del ancho
   },
   shadow: {
     shadowColor: colors.shadow,
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: Math.min(height * 0.0025, 2), // Responsive shadow
     },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: Math.min(width * 0.01, 4), // Responsive shadow radius
     elevation: 3,
   },
 });

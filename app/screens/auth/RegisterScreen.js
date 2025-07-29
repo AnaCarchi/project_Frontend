@@ -7,6 +7,7 @@ import {
   Platform,
   ScrollView,
   TouchableOpacity,
+  Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -17,6 +18,8 @@ import { colors } from '../../styles/theme';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 
+const { width, height } = Dimensions.get('window');
+
 export default function RegisterScreen({ navigation }) {
   const [formData, setFormData] = useState({
     username: '',
@@ -24,7 +27,7 @@ export default function RegisterScreen({ navigation }) {
     password: '',
     confirmPassword: '',
     role: 'USER',
-    adminCode: '', // NUEVO: Campo para código de admin
+    adminCode: '',
   });
   const [loading, setLoading] = useState(false);
 
@@ -68,7 +71,7 @@ export default function RegisterScreen({ navigation }) {
       return false;
     }
 
-    // VALIDACIÓN ESPECÍFICA PARA ADMINISTRADORES
+    // VALIDACIÓN PARA ADMINISTRADORES (sin mostrar códigos)
     if (formData.role === 'ADMIN' && !formData.adminCode.trim()) {
       Toast.show({
         type: 'error',
@@ -135,7 +138,10 @@ export default function RegisterScreen({ navigation }) {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
-        <ScrollView contentContainerStyle={styles.scrollView}>
+        <ScrollView 
+          contentContainerStyle={styles.scrollView}
+          showsVerticalScrollIndicator={false}
+        >
           <View style={styles.header}>
             <TouchableOpacity
               onPress={() => navigation.goBack()}
@@ -148,7 +154,7 @@ export default function RegisterScreen({ navigation }) {
               />
             </TouchableOpacity>
             <Text style={styles.title}>Crear Cuenta</Text>
-            <View style={{ width: 48 }} />
+            <View style={styles.headerSpacer} />
           </View>
 
           <View style={styles.formContainer}>
@@ -187,7 +193,7 @@ export default function RegisterScreen({ navigation }) {
               secureTextEntry
             />
 
-            {/* SELECTOR DE ROL */}
+            {/* SELECTOR DE ROL - MEJORADO */}
             <View style={styles.roleContainer}>
               <Text style={styles.roleLabel}>Tipo de cuenta:</Text>
               <View style={styles.roleButtons}>
@@ -233,7 +239,7 @@ export default function RegisterScreen({ navigation }) {
               </View>
             </View>
 
-            {/* CAMPO DE CÓDIGO DE ADMINISTRADOR - Solo visible si selecciona ADMIN */}
+            {/* CAMPO DE CÓDIGO DE ADMINISTRADOR - SIN MOSTRAR CÓDIGOS VÁLIDOS */}
             {formData.role === 'ADMIN' && (
               <View style={styles.adminCodeContainer}>
                 <Input
@@ -245,17 +251,14 @@ export default function RegisterScreen({ navigation }) {
                   autoCapitalize="characters"
                   autoCorrect={false}
                 />
-                <View style={styles.codeWarning}>
+                <View style={styles.codeInfo}>
                   <MaterialCommunityIcons 
-                    name="alert-circle" 
+                    name="information" 
                     size={16} 
-                    color={colors.warning} 
+                    color={colors.primary} 
                   />
-                  <Text style={styles.codeWarningText}>
-                    Códigos válidos:{'\n'}
-                    • TIENDA2024{'\n'}
-                    • MiTienda_Admin_2024#{'\n'}
-                    • CATALOGO_ADMIN_2024!
+                  <Text style={styles.codeInfoText}>
+                    Contacta al administrador del sistema para obtener el código de acceso.
                   </Text>
                 </View>
               </View>
@@ -287,11 +290,11 @@ export default function RegisterScreen({ navigation }) {
             <View style={styles.loginContainer}>
               <Text style={styles.loginText}>¿Ya tienes cuenta? </Text>
               <Button
-              title="Inicia sesión"
-              variant="ghost"
-              size="small"
-              onPress={() => navigation.navigate('Login')} 
-               />
+                title="Inicia sesión"
+                variant="ghost"
+                size="small"
+                onPress={() => navigation.navigate('Login')} 
+              />
             </View>
           </View>
         </ScrollView>
@@ -310,27 +313,36 @@ const styles = StyleSheet.create({
   scrollView: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: 20,
+    paddingHorizontal: width * 0.05, // 5% del ancho de pantalla
+    paddingVertical: height * 0.03, // 3% del alto de pantalla
+    minHeight: height,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 30,
+    marginBottom: height * 0.04, // 4% del alto de pantalla
+    paddingTop: Platform.OS === 'ios' ? 40 : 20,
   },
   backButton: {
     padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
   },
   title: {
-    fontSize: 28,
+    fontSize: Math.min(width * 0.07, 28), // Responsive font size
     fontWeight: 'bold',
     color: colors.surface,
     textAlign: 'center',
+    flex: 1,
+  },
+  headerSpacer: {
+    width: 48, // Mismo ancho que el botón de back para centrar el título
   },
   formContainer: {
     backgroundColor: colors.surface,
     borderRadius: 20,
-    padding: 20,
+    padding: width * 0.05, // 5% del ancho de pantalla
     shadowColor: colors.shadow,
     shadowOffset: {
       width: 0,
@@ -339,12 +351,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 5,
+    marginBottom: 20,
   },
   roleContainer: {
     marginBottom: 20,
   },
   roleLabel: {
-    fontSize: 16,
+    fontSize: Math.min(width * 0.04, 16), // Responsive font size
     fontWeight: 'bold',
     color: colors.text,
     marginBottom: 12,
@@ -364,13 +377,14 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: colors.primary,
     backgroundColor: 'transparent',
+    minHeight: 48, // Altura mínima para touch
   },
   roleButtonActive: {
     backgroundColor: colors.primary,
   },
   roleButtonText: {
     marginLeft: 8,
-    fontSize: 14,
+    fontSize: Math.min(width * 0.035, 14), // Responsive font size
     fontWeight: '600',
     color: colors.primary,
   },
@@ -380,20 +394,20 @@ const styles = StyleSheet.create({
   adminCodeContainer: {
     marginBottom: 16,
   },
-  codeWarning: {
+  codeInfo: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: colors.warning + '20',
+    backgroundColor: colors.primary + '15',
     padding: 12,
     borderRadius: 8,
     marginTop: 8,
     borderLeftWidth: 4,
-    borderLeftColor: colors.warning,
+    borderLeftColor: colors.primary,
   },
-  codeWarningText: {
+  codeInfoText: {
     flex: 1,
-    fontSize: 12,
-    color: colors.warning,
+    fontSize: Math.min(width * 0.03, 12), // Responsive font size
+    color: colors.primary,
     marginLeft: 8,
     lineHeight: 16,
     fontWeight: '500',
@@ -408,20 +422,23 @@ const styles = StyleSheet.create({
   },
   roleDescriptionText: {
     flex: 1,
-    fontSize: 12,
+    fontSize: Math.min(width * 0.03, 12), // Responsive font size
     color: colors.textSecondary,
     marginLeft: 8,
     lineHeight: 16,
   },
   registerButton: {
     marginBottom: 20,
+    minHeight: 48, // Altura mínima para touch
   },
   loginContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    flexWrap: 'wrap', // Permite que se envuelva en pantallas pequeñas
   },
   loginText: {
     color: colors.textSecondary,
+    fontSize: Math.min(width * 0.035, 14), // Responsive font size
   },
 });

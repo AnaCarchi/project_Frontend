@@ -1,6 +1,8 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, Dimensions } from 'react-native';
 import { colors } from '../../styles/theme';
+
+const { width, height } = Dimensions.get('window');
 
 export default function Button({
   title,
@@ -80,20 +82,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 8,
-    paddingHorizontal: 16,
+    borderRadius: Math.min(width * 0.02, 8),
+    paddingHorizontal: width * 0.04, // 4% del ancho
   },
   small: {
-    paddingVertical: 8,
-    minHeight: 36,
+    paddingVertical: height * 0.01, // 1% del alto
+    minHeight: Math.max(height * 0.045, 36), // Mínimo 36px
   },
   medium: {
-    paddingVertical: 12,
-    minHeight: 44,
+    paddingVertical: height * 0.015, // 1.5% del alto
+    minHeight: Math.max(height * 0.055, 44), // Mínimo 44px
   },
   large: {
-    paddingVertical: 16,
-    minHeight: 52,
+    paddingVertical: height * 0.02, // 2% del alto
+    minHeight: Math.max(height * 0.065, 52), // Mínimo 52px
   },
   primary: {
     backgroundColor: colors.primary,
@@ -117,13 +119,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   smallText: {
-    fontSize: 14,
+    fontSize: Math.min(width * 0.035, 14), // Responsive font size
   },
   mediumText: {
-    fontSize: 16,
+    fontSize: Math.min(width * 0.04, 16), // Responsive font size
   },
   largeText: {
-    fontSize: 18,
+    fontSize: Math.min(width * 0.045, 18), // Responsive font size
   },
   primaryText: {
     color: colors.surface,
@@ -135,6 +137,6 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
   icon: {
-    marginRight: 8,
+    marginRight: width * 0.02, // 2% del ancho
   },
 });
