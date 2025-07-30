@@ -25,8 +25,7 @@
       "icon": "./assets/icon.png",
       "infoPlist": {
         "NSCameraUsageDescription": "Esta aplicación necesita acceso a la cámara para tomar fotos de productos y categorías.",
-        "NSPhotoLibraryUsageDescription": "Esta aplicación necesita acceso a la galería para seleccionar imágenes de productos y categorías.",
-        "NSMicrophoneUsageDescription": "Esta aplicación necesita acceso al micrófono para grabar videos de productos."
+        "NSPhotoLibraryUsageDescription": "Esta aplicación necesita acceso a la galería para seleccionar imágenes de productos y categorías."
       }
     },
     "android": {
@@ -40,18 +39,11 @@
         "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE",
-        "android.permission.READ_MEDIA_IMAGES",
-        "android.permission.READ_MEDIA_VIDEO"
+        "android.permission.READ_MEDIA_IMAGES"
       ],
       "package": "com.tuempresa.catalogoropa",
       "versionCode": 1
     },
-    "extra": {
-      "eas": {
-        "projectId": "tu-project-id-aqui"
-      }
-    },
-    "owner": "tu-username-expo",
     "plugins": [
       [
         "expo-image-picker",
@@ -59,8 +51,7 @@
           "photosPermission": "La aplicación accede a tus fotos para permitirte seleccionar imágenes de productos y categorías.",
           "cameraPermission": "La aplicación accede a tu cámara para permitirte tomar fotos de productos y categorías."
         }
-      ],
-      "expo-font"
+      ]
     ]
   }
 }

@@ -55,10 +55,9 @@ export const imageService = {
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
-        base64: false,
       });
 
-      if (!result.canceled && result.assets[0]) {
+      if (!result.canceled && result.assets && result.assets[0]) {
         return result.assets[0];
       }
       return null;
@@ -83,10 +82,9 @@ export const imageService = {
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
-        base64: false,
       });
 
-      if (!result.canceled && result.assets[0]) {
+      if (!result.canceled && result.assets && result.assets[0]) {
         return result.assets[0];
       }
       return null;
@@ -195,18 +193,9 @@ export const imageService = {
   // Comprimir imagen si es muy grande
   compressImage: async (imageUri) => {
     try {
-      const manipulatedImage = await ImagePicker.manipulateAsync(
-        imageUri,
-        [
-          { resize: { width: 800 } }, // Redimensionar a máximo 800px de ancho
-        ],
-        {
-          compress: 0.8, // Comprimir al 80%
-          format: ImagePicker.SaveFormat.JPEG,
-        }
-      );
-      
-      return manipulatedImage.uri;
+      // Para la nueva versión de expo-image-picker, no necesitamos manipulateAsync
+      // ya que quality: 0.8 en las opciones ya comprime la imagen
+      return imageUri;
     } catch (error) {
       console.error('Error compressing image:', error);
       return imageUri; // Retornar imagen original si falla la compresión

@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../../styles/theme';
+import { reportService } from '../../services/reportService';
 import Header from '../../components/common/Header';
 import Card from '../../components/common/Card';
 
@@ -25,7 +26,10 @@ export default function AdminReportsScreen({ navigation }) {
       description: 'Lista completa de productos con detalles',
       icon: 'package-variant',
       color: colors.primary,
-      formats: ['PDF', 'Excel'],
+      formats: [
+        { type: 'PDF', service: 'generateProductsPdfReport' },
+        { type: 'Excel', service: 'generateProductsExcelReport' }
+      ],
     },
     {
       id: 'categories',
@@ -33,7 +37,9 @@ export default function AdminReportsScreen({ navigation }) {
       description: 'Información de todas las categorías',
       icon: 'tag-multiple',
       color: colors.accent,
-      formats: ['PDF'],
+      formats: [
+        { type: 'PDF', service: 'generateCategoriesPdfReport' }
+      ],
     },
     {
       id: 'users',
@@ -41,7 +47,9 @@ export default function AdminReportsScreen({ navigation }) {
       description: 'Lista de usuarios registrados',
       icon: 'account-group',
       color: colors.success,
-      formats: ['Excel'],
+      formats: [
+        { type: 'Excel', service: 'generateUsersExcelReport' }
+      ],
     },
     {
       id: 'inventory',
@@ -49,37 +57,51 @@ export default function AdminReportsScreen({ navigation }) {
       description: 'Estado actual del inventario',
       icon: 'warehouse',
       color: colors.warning,
-      formats: ['PDF'],
+      formats: [
+        { type: 'PDF', service: 'generateInventoryReport' }
+      ],
     },
   ];
 
-  const handleGenerateReport = (reportType, format) => {
+  const handleGenerateReport = async (reportType, format) => {
+    const generatingKey = `${reportType.id}_${format.type}`;
+    
     Alert.alert(
       'Generar Reporte',
-      `¿Generar ${reportType.title} en formato ${format}?`,
+      `¿Generar ${reportType.title} en formato ${format.type}?\n\nEl archivo se guardará en tu dispositivo y podrás compartirlo.`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
           text: 'Generar',
           onPress: async () => {
-            setGenerating(`${reportType.id}_${format}`);
+            setGenerating(generatingKey);
             
-            // Simular generación de reporte
-            setTimeout(() => {
-              setGenerating(null);
+            try {
+              console.log(`📊 Generando reporte: ${reportType.title} - ${format.type}`);
+              
+              // Llamar al servicio correspondiente
+              await reportService[format.service]();
+              
+              console.log('✅ Reporte generado exitosamente');
+              
+            } catch (error) {
+              console.error('❌ Error generando reporte:', error);
+              
+              let errorMessage = 'Error generando el reporte';
+              if (error.response?.data?.error) {
+                errorMessage = error.response.data.error;
+              } else if (error.message) {
+                errorMessage = error.message;
+              }
+              
               Alert.alert(
-                'Reporte Generado',
-                `El ${reportType.title} ha sido generado exitosamente.`,
-                [
-                  {
-                    text: 'OK',
-                    onPress: () => {
-                      console.log(`Downloading ${reportType.id} report in ${format} format`);
-                    },
-                  },
-                ]
+                'Error',
+                errorMessage,
+                [{ text: 'OK' }]
               );
-            }, 2000);
+            } finally {
+              setGenerating(null);
+            }
           },
         },
       ]
@@ -104,33 +126,38 @@ export default function AdminReportsScreen({ navigation }) {
 
       <View style={styles.reportActions}>
         {report.formats.map((format) => {
-          const isGenerating = generating === `${report.id}_${format}`;
+          const generatingKey = `${report.id}_${format.type}`;
+          const isGenerating = generating === generatingKey;
+          
           return (
             <TouchableOpacity
-              key={format}
+              key={format.type}
               style={[
                 styles.formatButton,
                 isGenerating && styles.formatButtonGenerating,
               ]}
               onPress={() => handleGenerateReport(report, format)}
-              disabled={isGenerating}
+              disabled={isGenerating || generating !== null}
             >
               {isGenerating ? (
-                <MaterialCommunityIcons
-                  name="loading"
-                  size={16}
-                  color={colors.surface}
-                />
+                <>
+                  <MaterialCommunityIcons
+                    name="loading"
+                    size={16}
+                    color={colors.surface}
+                  />
+                  <Text style={styles.formatButtonText}>Generando...</Text>
+                </>
               ) : (
-                <MaterialCommunityIcons
-                  name={format === 'PDF' ? 'file-pdf-box' : 'file-excel-box'}
-                  size={16}
-                  color={colors.surface}
-                />
+                <>
+                  <MaterialCommunityIcons
+                    name={format.type === 'PDF' ? 'file-pdf-box' : 'file-excel-box'}
+                    size={16}
+                    color={colors.surface}
+                  />
+                  <Text style={styles.formatButtonText}>{format.type}</Text>
+                </>
               )}
-              <Text style={styles.formatButtonText}>
-                {isGenerating ? 'Generando...' : format}
-              </Text>
             </TouchableOpacity>
           );
         })}
@@ -142,14 +169,14 @@ export default function AdminReportsScreen({ navigation }) {
     <View style={styles.container}>
       <Header
         title="Reportes"
-        subtitle="Generar reportes del sistema"
+        subtitle="Generar y descargar reportes"
       />
 
       <ScrollView style={styles.content}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Reportes Disponibles</Text>
           <Text style={styles.sectionDescription}>
-            Selecciona el tipo de reporte que deseas generar
+            Los reportes se guardarán en tu dispositivo y podrás compartirlos
           </Text>
         </View>
 
@@ -170,8 +197,11 @@ export default function AdminReportsScreen({ navigation }) {
               <Text style={styles.infoTitle}>Información</Text>
             </View>
             <Text style={styles.infoText}>
-              Los reportes se generan con la información más actualizada del sistema. 
-              El tiempo de generación puede variar según la cantidad de datos.
+              • Los reportes se generan con datos actualizados{'\n'}
+              • Se guardan en la carpeta de documentos de la app{'\n'}
+              • Puedes compartirlos por email, WhatsApp, etc.{'\n'}
+              • Los archivos PDF se pueden abrir en cualquier visor{'\n'}
+              • Los archivos Excel se pueden abrir en apps de hojas de cálculo
             </Text>
           </Card>
         </View>
@@ -189,7 +219,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   section: {
-    marginBottom: 20,
+    marginBottom: 24,
     paddingHorizontal: 16,
   },
   sectionTitle: {
@@ -261,7 +291,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   infoCard: {
-    margin: 16,
+    margin: 0,
   },
   infoHeader: {
     flexDirection: 'row',
