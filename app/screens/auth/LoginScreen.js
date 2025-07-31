@@ -7,6 +7,7 @@ import {
   Platform,
   ScrollView,
   Dimensions,
+  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -23,9 +24,8 @@ export default function LoginScreen({ navigation }) {
     password: '',
   });
   const [loading, setLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
 
-  const { login } = useAuth();
+  const { login, debugAuthState } = useAuth();
 
   const handleLogin = async () => {
     if (!formData.username || !formData.password) {
@@ -39,20 +39,106 @@ export default function LoginScreen({ navigation }) {
 
     setLoading(true);
     try {
+      console.log('Iniciando proceso de login...');
+      console.log(' Credenciales:', {
+        username: formData.username,
+        passwordLength: formData.password.length
+      });
+
+      // 1. REALIZAR LOGIN
       const response = await authService.login(formData);
-      await login(response.data, response.data.token);
+      
+      console.log('📡 Respuesta del servidor:', {
+        status: response.status,
+        hasData: !!response.data,
+        dataKeys: Object.keys(response.data || {})
+      });
+
+      // 2. VALIDAR RESPUESTA
+      if (!response.data) {
+        throw new Error('Respuesta vacía del servidor');
+      }
+
+      const { token, username, email, role, userId } = response.data;
+
+      console.log('🔍 Datos recibidos:', {
+        hasToken: !!token,
+        tokenLength: token?.length || 0,
+        username,
+        email,
+        role,
+        userId
+      });
+
+      // 3. VALIDAR TOKEN
+      if (!token) {
+        throw new Error('Token no recibido del servidor');
+      }
+
+      if (token.length < 50) {
+        throw new Error('Token parece inválido (muy corto)');
+      }
+
+      // 4. VALIDAR DATOS DE USUARIO
+      if (!username || !role) {
+        throw new Error('Datos de usuario incompletos');
+      }
+
+      // 5. GUARDAR EN CONTEXT
+      const userData = {
+        username,
+        email,
+        role,
+        userId: userId || null,
+      };
+
+      console.log(' Guardando en AuthContext:', userData);
+
+      await login(userData, token);
+
+      // 6. DEBUG DEL ESTADO
+      setTimeout(() => {
+        debugAuthState();
+      }, 1000);
+
+      console.log(' Login completado exitosamente');
       
       Toast.show({
         type: 'success',
         text1: 'Bienvenido',
-        text2: `Hola ${response.data.username}!`,
+        text2: `Hola ${username}! (${role})`,
       });
+
     } catch (error) {
+      console.error(' Error durante el login:', error);
+      
+      let errorMessage = 'Error de conexión';
+      
+      if (error.response?.status === 401) {
+        errorMessage = 'Credenciales incorrectas';
+      } else if (error.response?.status === 403) {
+        errorMessage = 'Acceso denegado';
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
       Toast.show({
         type: 'error',
         text1: 'Error de autenticación',
-        text2: error.response?.data?.message || 'Credenciales inválidas',
+        text2: errorMessage,
       });
+
+      // Debug del error
+      console.log('🔍 Debug del error:', {
+        errorType: error.constructor.name,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        message: error.message,
+        responseData: error.response?.data
+      });
+
     } finally {
       setLoading(false);
     }
@@ -60,6 +146,29 @@ export default function LoginScreen({ navigation }) {
 
   const updateFormData = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  //  FUNCIÓN DE DEBUG PARA TESTING
+  const handleDebugLogin = () => {
+    Alert.alert(
+      'Debug Login',
+      'Selecciona un usuario para probar:',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Admin (TIENDA2024)',
+          onPress: () => {
+            setFormData({ username: 'admin', password: 'admin123' });
+          },
+        },
+        {
+          text: 'Usuario Normal',
+          onPress: () => {
+            setFormData({ username: 'user', password: 'user123' });
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -119,6 +228,17 @@ export default function LoginScreen({ navigation }) {
               style={styles.loginButton}
             />
 
+            {/* ⚠️ BOTÓN DE DEBUG SOLO EN DESARROLLO */}
+            {__DEV__ && (
+              <Button
+                title="🔧 Debug Login"
+                variant="outline"
+                size="small"
+                onPress={handleDebugLogin}
+                style={styles.debugButton}
+              />
+            )}
+
             <View style={styles.registerContainer}>
               <Text style={styles.registerText}>¿No tienes cuenta? </Text>
               <Button
@@ -147,22 +267,22 @@ const styles = StyleSheet.create({
   scrollView: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingHorizontal: width * 0.05, // 5% del ancho
-    paddingVertical: height * 0.03, // 3% del alto
+    paddingHorizontal: width * 0.05,
+    paddingVertical: height * 0.03,
     minHeight: height,
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: height * 0.05, // 5% del alto
+    marginBottom: height * 0.05,
   },
   logoCircle: {
-    width: Math.min(width * 0.3, 120), // 30% del ancho máximo 120px
+    width: Math.min(width * 0.3, 120),
     height: Math.min(width * 0.3, 120),
     borderRadius: Math.min(width * 0.15, 60),
     backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: height * 0.025, // 2.5% del alto
+    marginBottom: height * 0.025,
     shadowColor: colors.shadow,
     shadowOffset: {
       width: 0,
@@ -173,14 +293,14 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   title: {
-    fontSize: Math.min(width * 0.08, 32), // Responsive font size
+    fontSize: Math.min(width * 0.08, 32),
     fontWeight: 'bold',
     color: colors.surface,
-    marginBottom: height * 0.01, // 1% del alto
+    marginBottom: height * 0.01,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: Math.min(width * 0.04, 16), // Responsive font size
+    fontSize: Math.min(width * 0.04, 16),
     color: colors.surface,
     opacity: 0.9,
     textAlign: 'center',
@@ -188,8 +308,8 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     backgroundColor: colors.surface,
-    borderRadius: Math.min(width * 0.05, 20), // Responsive border radius
-    padding: width * 0.05, // 5% del ancho
+    borderRadius: Math.min(width * 0.05, 20),
+    padding: width * 0.05,
     shadowColor: colors.shadow,
     shadowOffset: {
       width: 0,
@@ -201,19 +321,23 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     alignItems: 'flex-end',
-    marginBottom: height * 0.03, // 3% del alto
+    marginBottom: height * 0.03,
   },
   loginButton: {
-    marginBottom: height * 0.025, // 2.5% del alto
+    marginBottom: height * 0.025,
+  },
+  debugButton: {
+    marginBottom: height * 0.015,
+    borderColor: colors.warning,
   },
   registerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    flexWrap: 'wrap', // Permite que se envuelva en pantallas pequeñas
+    flexWrap: 'wrap',
   },
   registerText: {
     color: colors.textSecondary,
-    fontSize: Math.min(width * 0.035, 14), // Responsive font size
+    fontSize: Math.min(width * 0.035, 14),
   },
 });

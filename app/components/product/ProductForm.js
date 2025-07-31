@@ -1,3 +1,5 @@
+// app/components/product/ProductForm.js - VERSIÓN CORREGIDA
+
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert, Dimensions } from 'react-native';
 import { colors } from '../../styles/theme';
@@ -41,6 +43,7 @@ export default function ProductForm({
   };
 
   const handleImageSelected = (imageUri) => {
+    console.log('🖼️ Imagen seleccionada:', imageUri);
     setSelectedImageUri(imageUri);
     setImageChanged(true);
     updateFormData('imageUrl', imageUri);
@@ -95,24 +98,53 @@ export default function ProductForm({
         active: formData.active,
       };
 
-      // Llamar a onSubmit
+      console.log('📝 Enviando datos del producto:', productData);
+
+      // 1. CREAR/ACTUALIZAR PRODUCTO PRIMERO
       const result = await onSubmit(productData);
+      console.log('✅ Producto guardado:', result);
       
-      // Si hay una nueva imagen y el producto se creó/actualizó exitosamente
+      // 2. SUBIR IMAGEN SI HAY UNA NUEVA Y EL PRODUCTO SE GUARDÓ EXITOSAMENTE
       if (imageChanged && selectedImageUri && result && result.id) {
         try {
+          console.log('📸 Subiendo imagen para producto:', result.id);
+          console.log('🖼️ URI de imagen:', selectedImageUri);
+          
           await imageService.uploadProductImage(result.id, selectedImageUri);
-          Alert.alert('Éxito', 'Producto e imagen guardados correctamente');
-        } catch (imageError) {
-          console.error('Error uploading image:', imageError);
+          
           Alert.alert(
-            'Producto guardado', 
-            'El producto se guardó correctamente, pero hubo un error al subir la imagen. Puedes intentar subirla más tarde.'
+            'Éxito Completo',
+            '✅ Producto e imagen guardados correctamente',
+            [{ text: 'OK' }]
+          );
+          
+        } catch (imageError) {
+          console.error('❌ Error uploading product image:', imageError);
+          Alert.alert(
+            'Producto Guardado',
+            '✅ El producto se guardó correctamente\n❌ Pero hubo un error al subir la imagen\n\n' +
+            'Puedes intentar subir la imagen más tarde editando el producto.',
+            [{ text: 'OK' }]
           );
         }
+      } else if (!imageChanged) {
+        Alert.alert(
+          'Éxito',
+          '✅ Producto guardado correctamente',
+          [{ text: 'OK' }]
+        );
       }
+      
+      return result;
+      
     } catch (error) {
-      console.error('Error in form submission:', error);
+      console.error('❌ Error in form submission:', error);
+      Alert.alert(
+        'Error',
+        `❌ No se pudo guardar el producto: ${error.message || 'Error desconocido'}`,
+        [{ text: 'OK' }]
+      );
+      throw error;
     }
   };
 
@@ -132,6 +164,11 @@ export default function ProductForm({
             placeholder="Seleccionar imagen del producto"
             disabled={loading}
           />
+          {selectedImageUri && (
+            <Text style={styles.imageInfo}>
+              {imageChanged ? '🆕 Nueva imagen seleccionada' : '✅ Imagen actual'}
+            </Text>
+          )}
         </View>
 
         <Input
@@ -238,53 +275,60 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   formCard: {
-    margin: width * 0.04, // 4% del ancho
+    margin: width * 0.04,
   },
   title: {
-    fontSize: Math.min(width * 0.06, 24), // Responsive font size
+    fontSize: Math.min(width * 0.06, 24),
     fontWeight: 'bold',
     color: colors.text,
-    marginBottom: height * 0.03, // 3% del alto
+    marginBottom: height * 0.03,
     textAlign: 'center',
   },
   imageSection: {
-    marginBottom: height * 0.025, // 2.5% del alto
+    marginBottom: height * 0.025,
   },
   sectionLabel: {
-    fontSize: Math.min(width * 0.04, 16), // Responsive font size
+    fontSize: Math.min(width * 0.04, 16),
     fontWeight: '600',
     color: colors.text,
-    marginBottom: height * 0.01, // 1% del alto
+    marginBottom: height * 0.01,
+  },
+  imageInfo: {
+    fontSize: 12,
+    color: colors.success,
+    marginTop: 8,
+    textAlign: 'center',
+    fontWeight: '500',
   },
   row: {
     flexDirection: 'row',
-    gap: width * 0.03, // 3% del ancho
+    gap: width * 0.03,
   },
   halfInput: {
     flex: 1,
   },
   categorySection: {
-    marginBottom: height * 0.02, // 2% del alto
+    marginBottom: height * 0.02,
   },
   categoryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: width * 0.02, // 2% del ancho
-    marginTop: height * 0.01, // 1% del alto
+    gap: width * 0.02,
+    marginTop: height * 0.01,
   },
   categoryButton: {
-    minWidth: width * 0.25, // 25% del ancho mínimo
-    marginBottom: height * 0.01, // 1% del alto
+    minWidth: width * 0.25,
+    marginBottom: height * 0.01,
   },
   errorText: {
-    fontSize: Math.min(width * 0.03, 12), // Responsive font size
+    fontSize: Math.min(width * 0.03, 12),
     color: colors.error,
-    marginTop: height * 0.005, // 0.5% del alto
+    marginTop: height * 0.005,
   },
   actions: {
     flexDirection: 'row',
-    gap: width * 0.03, // 3% del ancho
-    marginTop: height * 0.03, // 3% del alto
+    gap: width * 0.03,
+    marginTop: height * 0.03,
   },
   actionButton: {
     flex: 1,

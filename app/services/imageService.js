@@ -1,3 +1,5 @@
+// app/services/imageService.js - VERSIÓN CORREGIDA COMPLETA
+
 import * as ImagePicker from 'expo-image-picker';
 import { Alert } from 'react-native';
 import api from './api';
@@ -54,6 +56,7 @@ export const imageService = {
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
+        base64: false, // NO necesitamos base64 aquí
       };
 
       const result = await ImagePicker.launchCameraAsync(options);
@@ -82,6 +85,7 @@ export const imageService = {
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
+        base64: false, // NO necesitamos base64 aquí
       };
 
       const result = await ImagePicker.launchImageLibraryAsync(options);
@@ -118,7 +122,7 @@ export const imageService = {
     }
   },
 
-  // Crear FormData correctamente
+  // Crear FormData correctamente para React Native
   createFormData: (imageUri, fieldName = 'file') => {
     try {
       const formData = new FormData();
@@ -131,14 +135,20 @@ export const imageService = {
       const validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
       const finalFileType = validExtensions.includes(fileType) ? fileType : 'jpg';
       
-      // Formato correcto para React Native FormData
+      // FORMATO CORRECTO para React Native FormData
       const fileObject = {
         uri: imageUri,
-        name: `image.${finalFileType}`,
-        type: `image/${finalFileType}`,
+        name: `image_${Date.now()}.${finalFileType}`,
+        type: `image/${finalFileType === 'jpg' ? 'jpeg' : finalFileType}`,
       };
       
       formData.append(fieldName, fileObject);
+      
+      console.log('FormData creado:', {
+        uri: imageUri,
+        name: fileObject.name,
+        type: fileObject.type
+      });
       
       return formData;
     } catch (error) {
@@ -147,41 +157,91 @@ export const imageService = {
     }
   },
 
-  // Subir imagen de producto
+  // Subir imagen de producto - CORREGIDO
   uploadProductImage: async (productId, imageUri) => {
     try {
+      console.log('=== SUBIENDO IMAGEN DE PRODUCTO ===');
+      console.log('Product ID:', productId);
+      console.log('Image URI:', imageUri);
+      
       const formData = imageService.createFormData(imageUri, 'file');
+      
+      console.log('Enviando POST a:', `/products/${productId}/image`);
       
       const response = await api.post(`/products/${productId}/image`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          'Accept': 'application/json',
         },
-        timeout: 60000,
+        timeout: 60000, // 60 segundos
       });
 
+      console.log('✅ Imagen subida exitosamente:', response.data);
+      
+      // Mostrar mensaje de éxito
+      Alert.alert(
+        'Éxito',
+        'Imagen subida correctamente',
+        [{ text: 'OK' }]
+      );
+      
       return response.data;
     } catch (error) {
-      console.error('Error uploading product image:', error);
-      throw new Error('No se pudo subir la imagen del producto');
+      console.error('❌ Error uploading product image:', error);
+      
+      let errorMessage = 'No se pudo subir la imagen del producto';
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert('Error', errorMessage);
+      throw new Error(errorMessage);
     }
   },
 
-  // Subir imagen de categoría
+  // Subir imagen de categoría - CORREGIDO
   uploadCategoryImage: async (categoryId, imageUri) => {
     try {
+      console.log('=== SUBIENDO IMAGEN DE CATEGORÍA ===');
+      console.log('Category ID:', categoryId);
+      console.log('Image URI:', imageUri);
+      
       const formData = imageService.createFormData(imageUri, 'file');
+      
+      console.log('Enviando POST a:', `/categories/${categoryId}/image`);
       
       const response = await api.post(`/categories/${categoryId}/image`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          'Accept': 'application/json',
         },
-        timeout: 60000,
+        timeout: 60000, // 60 segundos
       });
 
+      console.log('✅ Imagen de categoría subida exitosamente:', response.data);
+      
+      // Mostrar mensaje de éxito
+      Alert.alert(
+        'Éxito',
+        'Imagen de categoría subida correctamente',
+        [{ text: 'OK' }]
+      );
+      
       return response.data;
     } catch (error) {
-      console.error('Error uploading category image:', error);
-      throw new Error('No se pudo subir la imagen de la categoría');
+      console.error('❌ Error uploading category image:', error);
+      
+      let errorMessage = 'No se pudo subir la imagen de la categoría';
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert('Error', errorMessage);
+      throw new Error(errorMessage);
     }
   },
 
@@ -203,8 +263,8 @@ export const imageService = {
 
     // Validar dimensiones mínimas
     if (imageAsset.width && imageAsset.height) {
-      if (imageAsset.width < 100 || imageAsset.height < 100) {
-        return { valid: false, error: 'La imagen debe ser al menos de 100x100 píxeles' };
+      if (imageAsset.width < 50 || imageAsset.height < 50) {
+        return { valid: false, error: 'La imagen debe ser al menos de 50x50 píxeles' };
       }
     }
 
@@ -213,6 +273,8 @@ export const imageService = {
 
   // Comprimir imagen si es muy grande
   compressImage: async (imageUri) => {
+    // Por ahora retornamos la URI original
+    // Podrías implementar compresión con expo-image-manipulator
     return imageUri;
   },
 
@@ -223,13 +285,13 @@ export const imageService = {
       
       return {
         success: true,
-        message: `Conexión exitosa. Productos: ${response.data?.length || 0}`,
+        message: `Conexión exitosa. Productos encontrados: ${response.data?.length || 0}`,
         productsCount: response.data?.length || 0
       };
     } catch (error) {
       return {
         success: false,
-        message: 'Error de conexión: ' + error.message,
+        message: 'Error de conexión: ' + (error.message || 'Error desconocido'),
         error: error
       };
     }

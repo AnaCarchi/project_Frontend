@@ -47,3 +47,10 @@ export const USER_ROLES = {
   ADMIN: 'ROLE_ADMIN',
   USER: 'ROLE_USER',
 };
+
+// URLs completas para debugging
+export const FULL_URLS = {
+  UPLOAD_PRODUCT_IMAGE: (id) => `http://192.168.100.7:8080/api/products/${id}/image`,
+  UPLOAD_CATEGORY_IMAGE: (id) => `http://192.168.100.7:8080/api/categories/${id}/image`,
+  VIEW_UPLOADS: 'http://192.168.100.7:8080/uploads/',
+};
