@@ -41,7 +41,7 @@ export const imageService = {
     });
   },
 
-  // Abrir cámara - CORREGIDO
+  // Abrir cámara - SOLUCIONADO DEFINITIVAMENTE
   openCamera: async () => {
     try {
       const permissions = await imageService.requestPermissions();
@@ -50,13 +50,11 @@ export const imageService = {
         return null;
       }
 
-      // Opciones corregidas para expo-image-picker
+      // OPCIONES SIMPLIFICADAS - SIN mediaTypes problemático
       const options = {
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
-        base64: false, // No necesitamos base64 por defecto
       };
 
       console.log('Opening camera with options:', options);
@@ -75,7 +73,7 @@ export const imageService = {
     }
   },
 
-  // Abrir galería - CORREGIDO
+  // Abrir galería - SOLUCIONADO DEFINITIVAMENTE
   openGallery: async () => {
     try {
       const permissions = await imageService.requestPermissions();
@@ -84,13 +82,11 @@ export const imageService = {
         return null;
       }
 
-      // Opciones corregidas para expo-image-picker
+      // OPCIONES SIMPLIFICADAS - SIN mediaTypes problemático
       const options = {
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
-        base64: false, // No necesitamos base64 por defecto
       };
 
       console.log('Opening gallery with options:', options);
