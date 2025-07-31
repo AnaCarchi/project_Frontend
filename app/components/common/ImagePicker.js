@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../../styles/theme';
@@ -29,19 +30,27 @@ export default function ImagePickerComponent({
   const handleSelectImage = async () => {
     if (disabled || loading) return;
 
+    console.log('=== SELECCIONANDO IMAGEN ===');
     setLoading(true);
+    
     try {
       const imageResult = await imageService.pickImage();
+      console.log('Imagen seleccionada:', imageResult);
+      
       if (imageResult) {
         // Validar imagen
         const validation = imageService.validateImage(imageResult);
         if (!validation.valid) {
-          alert(validation.error);
+          Alert.alert('Error', validation.error);
           return;
         }
 
+        console.log('Imagen validada correctamente');
+
         // Comprimir imagen si es necesario
         const compressedUri = await imageService.compressImage(imageResult.uri);
+        
+        console.log('URI final:', compressedUri);
         
         if (onImageSelected) {
           onImageSelected(compressedUri, imageResult);
@@ -49,7 +58,7 @@ export default function ImagePickerComponent({
       }
     } catch (error) {
       console.error('Error selecting image:', error);
-      alert('Error al seleccionar la imagen');
+      Alert.alert('Error', 'Error al seleccionar la imagen: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -58,19 +67,50 @@ export default function ImagePickerComponent({
   const handleUploadImage = async () => {
     if (!imageUri || !uploadFunction || !entityId || uploading) return;
 
+    console.log('=== SUBIENDO IMAGEN ===');
+    console.log('Entity ID:', entityId);
+    console.log('Image URI:', imageUri);
+    
     setUploading(true);
     try {
       const result = await uploadFunction(entityId, imageUri);
+      console.log('Upload result:', result);
+      
       if (onImageUploaded) {
         onImageUploaded(result);
       }
-      alert('Imagen subida exitosamente');
+      Alert.alert('Éxito', 'Imagen subida exitosamente');
     } catch (error) {
       console.error('Error uploading image:', error);
-      alert('Error al subir la imagen');
+      Alert.alert('Error', 'Error al subir la imagen: ' + error.message);
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleTestConnection = async () => {
+    console.log('=== PROBANDO CONEXION ===');
+    Alert.alert(
+      'Prueba de Conexión',
+      'Probando conexión con el servidor...',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Probar',
+          onPress: async () => {
+            try {
+              const result = await imageService.testConnection();
+              Alert.alert(
+                result.success ? 'Éxito' : 'Error',
+                result.message
+              );
+            } catch (error) {
+              Alert.alert('Error', 'Error en la prueba: ' + error.message);
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -96,6 +136,7 @@ export default function ImagePickerComponent({
         {loading && (
           <View style={styles.loadingOverlay}>
             <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={styles.loadingText}>Procesando...</Text>
           </View>
         )}
 
@@ -140,7 +181,29 @@ export default function ImagePickerComponent({
             </Text>
           </TouchableOpacity>
         )}
+
+        {/* Botón de prueba de conexión - solo en desarrollo */}
+        {__DEV__ && (
+          <TouchableOpacity
+            style={styles.testButton}
+            onPress={handleTestConnection}
+            disabled={loading || uploading}
+          >
+            <MaterialCommunityIcons name="wifi" size={16} color={colors.primary} />
+            <Text style={styles.testButtonText}>Test</Text>
+          </TouchableOpacity>
+        )}
       </View>
+
+      {/* Información de debug en desarrollo */}
+      {__DEV__ && (
+        <View style={styles.debugInfo}>
+          <Text style={styles.debugText}>Debug Info:</Text>
+          <Text style={styles.debugText}>URI: {imageUri ? 'Set' : 'None'}</Text>
+          <Text style={styles.debugText}>Entity ID: {entityId || 'None'}</Text>
+          <Text style={styles.debugText}>Upload Function: {uploadFunction ? 'Set' : 'None'}</Text>
+        </View>
+      )}
     </Card>
   );
 }
@@ -189,6 +252,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  loadingText: {
+    marginTop: 8,
+    fontSize: 12,
+    color: colors.primary,
+  },
   changeButton: {
     position: 'absolute',
     top: 8,
@@ -203,7 +271,9 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     marginTop: 12,
+    flexWrap: 'wrap',
   },
   removeButton: {
     flexDirection: 'row',
@@ -232,5 +302,31 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.surface,
     fontWeight: '600',
+  },
+  testButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+  testButtonText: {
+    marginLeft: 4,
+    fontSize: 12,
+    color: colors.primary,
+  },
+  debugInfo: {
+    marginTop: 8,
+    padding: 8,
+    backgroundColor: colors.background,
+    borderRadius: 4,
+  },
+  debugText: {
+    fontSize: 10,
+    color: colors.textSecondary,
+    fontFamily: 'monospace',
   },
 });

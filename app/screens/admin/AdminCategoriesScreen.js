@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Alert,
   Modal,
-  ScrollView,
   Dimensions,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -14,9 +13,7 @@ import { useCategories } from '../../hooks/useCategories';
 import { colors } from '../../styles/theme';
 import Header from '../../components/common/Header';
 import CategoryList from '../../components/category/CategoryList';
-import Input from '../../components/common/Input';
-import Button from '../../components/common/Button';
-import Card from '../../components/common/Card';
+import CategoryForm from '../../components/category/CategoryForm';
 import Loading from '../../components/common/Loading';
 
 const { width } = Dimensions.get('window');
@@ -30,16 +27,12 @@ export default function AdminCategoriesScreen({ navigation }) {
     deleteCategory,
     fetchCategories,
   } = useCategories();
+  
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-  });
 
   const resetForm = () => {
-    setFormData({ name: '', description: '' });
     setEditingCategory(null);
   };
 
@@ -50,10 +43,6 @@ export default function AdminCategoriesScreen({ navigation }) {
 
   const handleEditCategory = (category) => {
     setEditingCategory(category);
-    setFormData({
-      name: category.name,
-      description: category.description || '',
-    });
     setShowModal(true);
   };
 
@@ -78,37 +67,41 @@ export default function AdminCategoriesScreen({ navigation }) {
     );
   };
 
-  const handleFormSubmit = async () => {
-    if (!formData.name.trim()) {
-      Alert.alert('Error', 'El nombre de la categoría es requerido');
-      return;
-    }
-
+  const handleFormSubmit = async (categoryData) => {
     setFormLoading(true);
     try {
-      const categoryData = {
-        name: formData.name.trim(),
-        description: formData.description.trim() || null,
-      };
-
+      console.log('Datos de categoría recibidos:', categoryData);
+      
+      let result;
       if (editingCategory) {
-        await updateCategory(editingCategory.id, categoryData);
+        result = await updateCategory(editingCategory.id, categoryData);
+        console.log('Categoría actualizada:', result);
       } else {
-        await createCategory(categoryData);
+        result = await createCategory(categoryData);
+        console.log('Categoría creada:', result);
       }
       
       setShowModal(false);
       resetForm();
+      return result; // Importante: retornar el resultado para el manejo de imágenes
+      
     } catch (error) {
+      console.error('Error en form submit:', error);
       Alert.alert(
         'Error',
         editingCategory
           ? 'No se pudo actualizar la categoría'
           : 'No se pudo crear la categoría'
       );
+      throw error; // Re-lanzar el error para que CategoryForm lo maneje
     } finally {
       setFormLoading(false);
     }
+  };
+
+  const handleFormCancel = () => {
+    setShowModal(false);
+    resetForm();
   };
 
   const handleCategoryPress = (category) => {
@@ -152,7 +145,7 @@ export default function AdminCategoriesScreen({ navigation }) {
         )}
       </View>
 
-      {/* Modal para crear/editar categoría */}
+      {/* Modal con CategoryForm completo */}
       <Modal
         visible={showModal}
         animationType="slide"
@@ -166,45 +159,13 @@ export default function AdminCategoriesScreen({ navigation }) {
             onLeftPress={() => setShowModal(false)}
           />
           
-          <ScrollView style={styles.modalContent}>
-            <Card style={styles.formCard}>
-              <Input
-                label="Nombre de la categoría *"
-                value={formData.name}
-                onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
-                placeholder="Ingresa el nombre de la categoría"
-                leftIcon="tag"
-              />
-
-              <Input
-                label="Descripción"
-                value={formData.description}
-                onChangeText={(text) => setFormData(prev => ({ ...prev, description: text }))}
-                placeholder="Descripción de la categoría (opcional)"
-                multiline
-                numberOfLines={3}
-                leftIcon="text"
-              />
-
-              <View style={styles.formActions}>
-                <Button
-                  title="Cancelar"
-                  variant="outline"
-                  onPress={() => setShowModal(false)}
-                  style={styles.formButton}
-                  disabled={formLoading}
-                />
-                
-                <Button
-                  title={editingCategory ? 'Actualizar' : 'Crear'}
-                  onPress={handleFormSubmit}
-                  loading={formLoading}
-                  disabled={formLoading}
-                  style={styles.formButton}
-                />
-              </View>
-            </Card>
-          </ScrollView>
+          <CategoryForm
+            initialCategory={editingCategory}
+            onSubmit={handleFormSubmit}
+            onCancel={handleFormCancel}
+            loading={formLoading}
+            isEdit={!!editingCategory}
+          />
         </View>
       </Modal>
 
@@ -222,106 +183,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-  },
-  section: {
-    marginBottom: 24,
-    paddingHorizontal: 16,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.text,
-    marginBottom: 16,
-  },
-  statsGrid: {
-    gap: 12,
-  },
-  statCard: {
-    borderLeftWidth: 4,
-    marginBottom: 12,
-  },
-  statContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  statTextContainer: {
-    flex: 1,
-  },
-  statValue: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: colors.text,
-  },
-  statTitle: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginTop: 4,
-  },
-  quickActionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-    justifyContent: 'space-between',
-  },
-  quickAction: {
-    alignItems: 'center',
-    width: (width - 64) / 2,
-  },
-  quickActionIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  quickActionText: {
-    fontSize: 14,
-    color: colors.text,
-    textAlign: 'center',
-    fontWeight: '500',
-  },
-  alertCard: {
-    borderLeftWidth: 4,
-    borderLeftColor: colors.warning,
-  },
-  alertContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  alertText: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  alertTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: colors.text,
-  },
-  alertDescription: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  linksCard: {
-    padding: 0,
-  },
-  linkItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-  },
-  linkText: {
-    flex: 1,
-    fontSize: 16,
-    color: colors.text,
-    marginLeft: 12,
-  },
-  linkDivider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginHorizontal: 16,
   },
   fab: {
     position: 'absolute',
@@ -342,19 +203,5 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     backgroundColor: colors.background,
-  },
-  modalContent: {
-    flex: 1,
-  },
-  formCard: {
-    margin: 16,
-  },
-  formActions: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 24,
-  },
-  formButton: {
-    flex: 1,
   },
 });

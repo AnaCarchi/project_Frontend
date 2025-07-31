@@ -50,7 +50,6 @@ export const imageService = {
         return null;
       }
 
-      // Opciones para expo-image-picker 15.0.7
       const options = {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
@@ -83,7 +82,6 @@ export const imageService = {
         return null;
       }
 
-      // Opciones para expo-image-picker 15.0.7
       const options = {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
@@ -128,9 +126,13 @@ export const imageService = {
     }
   },
 
-  // Crear FormData para subida
+  // Crear FormData CORREGIDO
   createFormData: (imageUri, fieldName = 'file') => {
     try {
+      console.log('=== CREANDO FORMDATA ===');
+      console.log('imageUri:', imageUri);
+      console.log('fieldName:', fieldName);
+
       const formData = new FormData();
       
       // Obtener extensión del archivo
@@ -141,12 +143,18 @@ export const imageService = {
       const validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
       const finalFileType = validExtensions.includes(fileType) ? fileType : 'jpg';
       
-      formData.append(fieldName, {
+      // FORMATO CORREGIDO para React Native
+      const fileObject = {
         uri: imageUri,
         name: `image.${finalFileType}`,
         type: `image/${finalFileType}`,
-      });
+      };
 
+      console.log('File object:', fileObject);
+      
+      formData.append(fieldName, fileObject);
+
+      console.log('FormData created successfully');
       return formData;
     } catch (error) {
       console.error('Error creating form data:', error);
@@ -154,35 +162,52 @@ export const imageService = {
     }
   },
 
-  // Subir imagen de producto
+  // Subir imagen de producto CORREGIDO
   uploadProductImage: async (productId, imageUri) => {
     try {
-      console.log('Uploading product image:', { productId, imageUri });
+      console.log('=== UPLOAD PRODUCTO ===');
+      console.log('Product ID:', productId);
+      console.log('Image URI:', imageUri);
+      
       const formData = imageService.createFormData(imageUri);
+      
+      console.log('Enviando request a:', `/products/${productId}/image`);
       
       const response = await api.post(`/products/${productId}/image`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
-        timeout: 30000, // 30 segundos para imágenes
+        timeout: 30000,
       });
 
-      console.log('Upload successful:', response.data);
+      console.log('=== UPLOAD EXITOSO ===');
+      console.log('Response:', response.data);
       return response.data;
     } catch (error) {
-      console.error('Error uploading product image:', error);
+      console.error('=== ERROR EN UPLOAD ===');
+      console.error('Error:', error);
       if (error.response) {
-        console.error('Server response:', error.response.data);
+        console.error('Response status:', error.response.status);
+        console.error('Response data:', error.response.data);
+        console.error('Response headers:', error.response.headers);
+      }
+      if (error.request) {
+        console.error('Request config:', error.request);
       }
       throw new Error('No se pudo subir la imagen del producto');
     }
   },
 
-  // Subir imagen de categoría
+  // Subir imagen de categoría CORREGIDO
   uploadCategoryImage: async (categoryId, imageUri) => {
     try {
-      console.log('Uploading category image:', { categoryId, imageUri });
+      console.log('=== UPLOAD CATEGORIA ===');
+      console.log('Category ID:', categoryId);
+      console.log('Image URI:', imageUri);
+      
       const formData = imageService.createFormData(imageUri);
+      
+      console.log('Enviando request a:', `/categories/${categoryId}/image`);
       
       const response = await api.post(`/categories/${categoryId}/image`, formData, {
         headers: {
@@ -191,12 +216,15 @@ export const imageService = {
         timeout: 30000,
       });
 
-      console.log('Upload successful:', response.data);
+      console.log('=== UPLOAD EXITOSO ===');
+      console.log('Response:', response.data);
       return response.data;
     } catch (error) {
-      console.error('Error uploading category image:', error);
+      console.error('=== ERROR EN UPLOAD ===');
+      console.error('Error:', error);
       if (error.response) {
-        console.error('Server response:', error.response.data);
+        console.error('Response status:', error.response.status);
+        console.error('Response data:', error.response.data);
       }
       throw new Error('No se pudo subir la imagen de la categoría');
     }
@@ -208,7 +236,6 @@ export const imageService = {
       return { valid: false, error: 'No se seleccionó ninguna imagen' };
     }
 
-    // Validar que tenga URI
     if (!imageAsset.uri) {
       return { valid: false, error: 'La imagen no es válida' };
     }
@@ -232,7 +259,65 @@ export const imageService = {
   // Comprimir imagen si es muy grande
   compressImage: async (imageUri) => {
     // La compresión se maneja automáticamente con la opción quality: 0.8
-    // en las opciones de ImagePicker, no necesitamos librerías adicionales
     return imageUri;
   },
+
+  // Método de prueba para verificar conectividad
+  testConnection: async () => {
+    try {
+      console.log('=== TEST DE CONEXION ===');
+      
+      const response = await api.get('/products');
+      
+      console.log('Conexión exitosa');
+      console.log('Status:', response.status);
+      console.log('Productos encontrados:', response.data?.length || 0);
+      
+      return {
+        success: true,
+        message: 'Conexión exitosa',
+        productsCount: response.data?.length || 0
+      };
+    } catch (error) {
+      console.error('=== ERROR DE CONEXION ===');
+      console.error('Error:', error.message);
+      if (error.response) {
+        console.error('Status:', error.response.status);
+        console.error('Data:', error.response.data);
+      }
+      
+      return {
+        success: false,
+        message: 'Error de conexión: ' + error.message,
+        error: error
+      };
+    }
+  },
+
+  // Método de prueba para upload
+  testUpload: async (productId = 1) => {
+    try {
+      console.log('=== TEST DE UPLOAD ENDPOINT ===');
+      
+      const response = await api.get(`/products/${productId}/info`);
+      
+      console.log('Endpoint accesible');
+      console.log('Response:', response.data);
+      
+      return {
+        success: true,
+        message: 'Endpoint de upload accesible',
+        data: response.data
+      };
+    } catch (error) {
+      console.error('=== ERROR EN TEST UPLOAD ===');
+      console.error('Error:', error.message);
+      
+      return {
+        success: false,
+        message: 'Error en endpoint: ' + error.message,
+        error: error
+      };
+    }
+  }
 };
