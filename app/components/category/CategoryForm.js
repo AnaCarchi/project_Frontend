@@ -17,7 +17,6 @@ export default function CategoryForm({
   loading = false,
   isEdit = false,
 }) {
-  // Inicialización del estado
   const [formData, setFormData] = useState({
     name: initialCategory?.name || '',
     description: initialCategory?.description || '',
@@ -76,12 +75,12 @@ export default function CategoryForm({
 
       console.log('Enviando datos de categoría:', categoryData);
 
-      // Llamar a onSubmit
       const result = await onSubmit(categoryData);
       
       // Si hay una nueva imagen y la categoría se creó/actualizó exitosamente
       if (imageChanged && selectedImageUri && result && result.id) {
         try {
+          console.log('Subiendo imagen para categoría:', result.id);
           await imageService.uploadCategoryImage(result.id, selectedImageUri);
           Alert.alert('Éxito', 'Categoría e imagen guardadas correctamente');
         } catch (imageError) {
@@ -91,9 +90,12 @@ export default function CategoryForm({
             'La categoría se guardó correctamente, pero hubo un error al subir la imagen. Puedes intentar subirla más tarde.'
           );
         }
+      } else if (!imageChanged) {
+        Alert.alert('Éxito', 'Categoría guardada correctamente');
       }
     } catch (error) {
       console.error('Error in category form submission:', error);
+      Alert.alert('Error', 'No se pudo guardar la categoría');
     }
   };
 
@@ -104,7 +106,6 @@ export default function CategoryForm({
           {isEdit ? 'Editar Categoría' : 'Nueva Categoría'}
         </Text>
 
-        {/* Selector de imagen */}
         <View style={styles.imageSection}>
           <Text style={styles.sectionLabel}>Imagen de la categoría</Text>
           <ImagePickerComponent
@@ -134,32 +135,6 @@ export default function CategoryForm({
           numberOfLines={3}
           leftIcon="text"
         />
-
-        {/* Botón de prueba de conexión - solo en desarrollo */}
-        {__DEV__ && (
-          <View style={styles.testSection}>
-            <Text style={styles.sectionLabel}>Pruebas de Conexión</Text>
-            <View style={styles.testButtons}>
-              <Button
-                title="Test API"
-                variant="outline"
-                size="small"
-                onPress={async () => {
-                  try {
-                    const result = await imageService.testConnection();
-                    Alert.alert(
-                      result.success ? 'Conexión OK' : 'Error',
-                      result.message
-                    );
-                  } catch (error) {
-                    Alert.alert('Error', error.message);
-                  }
-                }}
-                style={styles.testButton}
-              />
-            </View>
-          </View>
-        )}
 
         <View style={styles.actions}>
           <Button
@@ -206,23 +181,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.text,
     marginBottom: height * 0.01,
-  },
-  testSection: {
-    marginBottom: height * 0.02,
-    padding: 12,
-    backgroundColor: colors.background,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderStyle: 'dashed',
-  },
-  testButtons: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 8,
-  },
-  testButton: {
-    flex: 1,
   },
   actions: {
     flexDirection: 'row',

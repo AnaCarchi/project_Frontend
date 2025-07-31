@@ -56,10 +56,7 @@ export const imageService = {
         quality: 0.8,
       };
 
-      console.log('Opening camera with options:', options);
       const result = await ImagePicker.launchCameraAsync(options);
-
-      console.log('Camera result:', result);
 
       if (!result.canceled && result.assets && result.assets[0]) {
         return result.assets[0];
@@ -67,7 +64,7 @@ export const imageService = {
       return null;
     } catch (error) {
       console.error('Error opening camera:', error);
-      Alert.alert('Error', 'No se pudo abrir la cámara: ' + error.message);
+      Alert.alert('Error', 'No se pudo abrir la cámara');
       return null;
     }
   },
@@ -87,10 +84,7 @@ export const imageService = {
         quality: 0.8,
       };
 
-      console.log('Opening gallery with options:', options);
       const result = await ImagePicker.launchImageLibraryAsync(options);
-
-      console.log('Gallery result:', result);
 
       if (!result.canceled && result.assets && result.assets[0]) {
         return result.assets[0];
@@ -98,7 +92,7 @@ export const imageService = {
       return null;
     } catch (error) {
       console.error('Error opening gallery:', error);
-      Alert.alert('Error', 'No se pudo abrir la galería: ' + error.message);
+      Alert.alert('Error', 'No se pudo abrir la galería');
       return null;
     }
   },
@@ -119,18 +113,14 @@ export const imageService = {
       return imageResult;
     } catch (error) {
       console.error('Error picking image:', error);
-      Alert.alert('Error', 'Error al seleccionar imagen: ' + error.message);
+      Alert.alert('Error', 'Error al seleccionar imagen');
       return null;
     }
   },
 
-  // CRITICAL FIX: Crear FormData correctamente
+  // Crear FormData correctamente
   createFormData: (imageUri, fieldName = 'file') => {
     try {
-      console.log('=== CREANDO FORMDATA ===');
-      console.log('imageUri:', imageUri);
-      console.log('fieldName:', fieldName);
-
       const formData = new FormData();
       
       // Obtener extensión del archivo
@@ -141,19 +131,14 @@ export const imageService = {
       const validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
       const finalFileType = validExtensions.includes(fileType) ? fileType : 'jpg';
       
-      // CRITICAL FIX: Formato correcto para React Native FormData
+      // Formato correcto para React Native FormData
       const fileObject = {
         uri: imageUri,
         name: `image.${finalFileType}`,
         type: `image/${finalFileType}`,
       };
-
-      console.log('File object:', fileObject);
       
       formData.append(fieldName, fileObject);
-
-      console.log('FormData created successfully');
-      console.log('FormData boundary:', formData._boundary); // Debug info
       
       return formData;
     } catch (error) {
@@ -162,83 +147,40 @@ export const imageService = {
     }
   },
 
-  // CRITICAL FIX: Subir imagen de producto con configuración correcta
+  // Subir imagen de producto
   uploadProductImage: async (productId, imageUri) => {
     try {
-      console.log('=== UPLOAD PRODUCTO ===');
-      console.log('Product ID:', productId);
-      console.log('Image URI:', imageUri);
-      
       const formData = imageService.createFormData(imageUri, 'file');
       
-      console.log('Enviando request a:', `/products/${productId}/image`);
-      
-      // CRITICAL FIX: Configuración específica para FormData
       const response = await api.post(`/products/${productId}/image`, formData, {
         headers: {
-          // NO establecer Content-Type manualmente
-          // Axios y el navegador lo configurarán automáticamente
+          'Content-Type': 'multipart/form-data',
         },
-        timeout: 60000, // 60 segundos para uploads
-        transformRequest: [(data) => {
-          // Retornar data sin transformar para FormData
-          return data;
-        }],
+        timeout: 60000,
       });
 
-      console.log('=== UPLOAD EXITOSO ===');
-      console.log('Response:', response.data);
       return response.data;
     } catch (error) {
-      console.error('=== ERROR EN UPLOAD ===');
-      console.error('Error message:', error.message);
-      if (error.response) {
-        console.error('Response status:', error.response.status);
-        console.error('Response data:', error.response.data);
-        console.error('Response headers:', error.response.headers);
-      }
-      if (error.request) {
-        console.error('Request config:', error.request);
-      }
+      console.error('Error uploading product image:', error);
       throw new Error('No se pudo subir la imagen del producto');
     }
   },
 
-  // CRITICAL FIX: Subir imagen de categoría con configuración correcta
+  // Subir imagen de categoría
   uploadCategoryImage: async (categoryId, imageUri) => {
     try {
-      console.log('=== UPLOAD CATEGORIA ===');
-      console.log('Category ID:', categoryId);
-      console.log('Image URI:', imageUri);
-      
       const formData = imageService.createFormData(imageUri, 'file');
       
-      console.log('Enviando request a:', `/categories/${categoryId}/image`);
-      
-      // CRITICAL FIX: Configuración específica para FormData
       const response = await api.post(`/categories/${categoryId}/image`, formData, {
         headers: {
-          // NO establecer Content-Type manualmente
-          // Axios y el navegador lo configurarán automáticamente
+          'Content-Type': 'multipart/form-data',
         },
-        timeout: 60000, // 60 segundos para uploads
-        transformRequest: [(data) => {
-          // Retornar data sin transformar para FormData
-          return data;
-        }],
+        timeout: 60000,
       });
 
-      console.log('=== UPLOAD EXITOSO ===');
-      console.log('Response:', response.data);
       return response.data;
     } catch (error) {
-      console.error('=== ERROR EN UPLOAD ===');
-      console.error('Error message:', error.message);
-      if (error.response) {
-        console.error('Response status:', error.response.status);
-        console.error('Response data:', error.response.data);
-        console.error('Response headers:', error.response.headers);
-      }
+      console.error('Error uploading category image:', error);
       throw new Error('No se pudo subir la imagen de la categoría');
     }
   },
@@ -271,20 +213,13 @@ export const imageService = {
 
   // Comprimir imagen si es muy grande
   compressImage: async (imageUri) => {
-    // La compresión se maneja automáticamente con la opción quality: 0.8
     return imageUri;
   },
 
   // Método de prueba para verificar conectividad
   testConnection: async () => {
     try {
-      console.log('=== TEST DE CONEXION ===');
-      
       const response = await api.get('/products');
-      
-      console.log('Conexión exitosa');
-      console.log('Status:', response.status);
-      console.log('Productos encontrados:', response.data?.length || 0);
       
       return {
         success: true,
@@ -292,13 +227,6 @@ export const imageService = {
         productsCount: response.data?.length || 0
       };
     } catch (error) {
-      console.error('=== ERROR DE CONEXION ===');
-      console.error('Error:', error.message);
-      if (error.response) {
-        console.error('Status:', error.response.status);
-        console.error('Data:', error.response.data);
-      }
-      
       return {
         success: false,
         message: 'Error de conexión: ' + error.message,
@@ -306,40 +234,4 @@ export const imageService = {
       };
     }
   },
-
-  // NUEVO: Método de prueba específico para uploads
-  testUploadEndpoint: async () => {
-    try {
-      console.log('=== TEST DE UPLOAD ENDPOINT ===');
-      
-      // Crear un FormData de prueba simple
-      const testFormData = new FormData();
-      testFormData.append('test', 'true');
-      
-      const response = await api.post('/test-upload', testFormData, {
-        headers: {
-          // NO establecer Content-Type
-        },
-        timeout: 30000,
-      });
-      
-      console.log('Endpoint de upload accesible');
-      console.log('Response:', response.data);
-      
-      return {
-        success: true,
-        message: 'Endpoint de upload funcional',
-        data: response.data
-      };
-    } catch (error) {
-      console.error('=== ERROR EN TEST UPLOAD ===');
-      console.error('Error:', error.message);
-      
-      return {
-        success: false,
-        message: 'Error en endpoint: ' + error.message,
-        error: error
-      };
-    }
-  }
 };

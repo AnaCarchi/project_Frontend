@@ -28,6 +28,13 @@ export const ENDPOINTS = {
     UPDATE: '/admin/users',
     DELETE: '/admin/users',
   },
+  REPORTS: {
+    PRODUCTS_PDF: '/reports/products/pdf/mobile',
+    PRODUCTS_EXCEL: '/reports/products/excel/mobile',
+    CATEGORIES_PDF: '/reports/categories/pdf/mobile',
+    USERS_EXCEL: '/reports/users/excel/mobile',
+    INVENTORY_PDF: '/reports/inventory/pdf/mobile',
+  },
 };
 
 export const STORAGE_KEYS = {
