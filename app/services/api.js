@@ -21,7 +21,6 @@ api.interceptors.request.use(
       console.log('=== REQUEST ===');
       console.log('URL:', config.baseURL + config.url);
       console.log('Method:', config.method?.toUpperCase());
-      console.log('Headers:', config.headers);
       
       const token = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
       if (token) {
@@ -31,11 +30,20 @@ api.interceptors.request.use(
         console.log('No hay token disponible');
       }
       
-      // Para FormData, eliminar Content-Type para que el navegador lo configure automáticamente
+      // CRITICAL FIX: Para FormData, eliminar Content-Type completamente
       if (config.data instanceof FormData) {
         console.log('FormData detectado - removiendo Content-Type header');
         delete config.headers['Content-Type'];
+        // También asegurar que no hay headers conflictivos
+        delete config.headers['content-type'];
+        config.headers = {
+          ...config.headers,
+          'Content-Type': undefined
+        };
+        console.log('Headers después de limpiar:', config.headers);
       }
+      
+      console.log('Headers finales:', config.headers);
       
     } catch (error) {
       console.error('Error in request interceptor:', error);

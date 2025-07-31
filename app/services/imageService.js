@@ -41,7 +41,7 @@ export const imageService = {
     });
   },
 
-  // Abrir cámara - SOLUCIONADO DEFINITIVAMENTE
+  // Abrir cámara
   openCamera: async () => {
     try {
       const permissions = await imageService.requestPermissions();
@@ -50,7 +50,6 @@ export const imageService = {
         return null;
       }
 
-      // OPCIONES SIMPLIFICADAS - SIN mediaTypes problemático
       const options = {
         allowsEditing: true,
         aspect: [1, 1],
@@ -73,7 +72,7 @@ export const imageService = {
     }
   },
 
-  // Abrir galería - SOLUCIONADO DEFINITIVAMENTE
+  // Abrir galería
   openGallery: async () => {
     try {
       const permissions = await imageService.requestPermissions();
@@ -82,7 +81,6 @@ export const imageService = {
         return null;
       }
 
-      // OPCIONES SIMPLIFICADAS - SIN mediaTypes problemático
       const options = {
         allowsEditing: true,
         aspect: [1, 1],
@@ -126,7 +124,7 @@ export const imageService = {
     }
   },
 
-  // Crear FormData CORREGIDO
+  // CRITICAL FIX: Crear FormData correctamente
   createFormData: (imageUri, fieldName = 'file') => {
     try {
       console.log('=== CREANDO FORMDATA ===');
@@ -143,7 +141,7 @@ export const imageService = {
       const validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
       const finalFileType = validExtensions.includes(fileType) ? fileType : 'jpg';
       
-      // FORMATO CORREGIDO para React Native
+      // CRITICAL FIX: Formato correcto para React Native FormData
       const fileObject = {
         uri: imageUri,
         name: `image.${finalFileType}`,
@@ -155,6 +153,8 @@ export const imageService = {
       formData.append(fieldName, fileObject);
 
       console.log('FormData created successfully');
+      console.log('FormData boundary:', formData._boundary); // Debug info
+      
       return formData;
     } catch (error) {
       console.error('Error creating form data:', error);
@@ -162,22 +162,28 @@ export const imageService = {
     }
   },
 
-  // Subir imagen de producto CORREGIDO
+  // CRITICAL FIX: Subir imagen de producto con configuración correcta
   uploadProductImage: async (productId, imageUri) => {
     try {
       console.log('=== UPLOAD PRODUCTO ===');
       console.log('Product ID:', productId);
       console.log('Image URI:', imageUri);
       
-      const formData = imageService.createFormData(imageUri);
+      const formData = imageService.createFormData(imageUri, 'file');
       
       console.log('Enviando request a:', `/products/${productId}/image`);
       
+      // CRITICAL FIX: Configuración específica para FormData
       const response = await api.post(`/products/${productId}/image`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          // NO establecer Content-Type manualmente
+          // Axios y el navegador lo configurarán automáticamente
         },
-        timeout: 30000,
+        timeout: 60000, // 60 segundos para uploads
+        transformRequest: [(data) => {
+          // Retornar data sin transformar para FormData
+          return data;
+        }],
       });
 
       console.log('=== UPLOAD EXITOSO ===');
@@ -185,7 +191,7 @@ export const imageService = {
       return response.data;
     } catch (error) {
       console.error('=== ERROR EN UPLOAD ===');
-      console.error('Error:', error);
+      console.error('Error message:', error.message);
       if (error.response) {
         console.error('Response status:', error.response.status);
         console.error('Response data:', error.response.data);
@@ -198,22 +204,28 @@ export const imageService = {
     }
   },
 
-  // Subir imagen de categoría CORREGIDO
+  // CRITICAL FIX: Subir imagen de categoría con configuración correcta
   uploadCategoryImage: async (categoryId, imageUri) => {
     try {
       console.log('=== UPLOAD CATEGORIA ===');
       console.log('Category ID:', categoryId);
       console.log('Image URI:', imageUri);
       
-      const formData = imageService.createFormData(imageUri);
+      const formData = imageService.createFormData(imageUri, 'file');
       
       console.log('Enviando request a:', `/categories/${categoryId}/image`);
       
+      // CRITICAL FIX: Configuración específica para FormData
       const response = await api.post(`/categories/${categoryId}/image`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          // NO establecer Content-Type manualmente
+          // Axios y el navegador lo configurarán automáticamente
         },
-        timeout: 30000,
+        timeout: 60000, // 60 segundos para uploads
+        transformRequest: [(data) => {
+          // Retornar data sin transformar para FormData
+          return data;
+        }],
       });
 
       console.log('=== UPLOAD EXITOSO ===');
@@ -221,10 +233,11 @@ export const imageService = {
       return response.data;
     } catch (error) {
       console.error('=== ERROR EN UPLOAD ===');
-      console.error('Error:', error);
+      console.error('Error message:', error.message);
       if (error.response) {
         console.error('Response status:', error.response.status);
         console.error('Response data:', error.response.data);
+        console.error('Response headers:', error.response.headers);
       }
       throw new Error('No se pudo subir la imagen de la categoría');
     }
@@ -275,7 +288,7 @@ export const imageService = {
       
       return {
         success: true,
-        message: 'Conexión exitosa',
+        message: `Conexión exitosa. Productos: ${response.data?.length || 0}`,
         productsCount: response.data?.length || 0
       };
     } catch (error) {
@@ -294,19 +307,28 @@ export const imageService = {
     }
   },
 
-  // Método de prueba para upload
-  testUpload: async (productId = 1) => {
+  // NUEVO: Método de prueba específico para uploads
+  testUploadEndpoint: async () => {
     try {
       console.log('=== TEST DE UPLOAD ENDPOINT ===');
       
-      const response = await api.get(`/products/${productId}/info`);
+      // Crear un FormData de prueba simple
+      const testFormData = new FormData();
+      testFormData.append('test', 'true');
       
-      console.log('Endpoint accesible');
+      const response = await api.post('/test-upload', testFormData, {
+        headers: {
+          // NO establecer Content-Type
+        },
+        timeout: 30000,
+      });
+      
+      console.log('Endpoint de upload accesible');
       console.log('Response:', response.data);
       
       return {
         success: true,
-        message: 'Endpoint de upload accesible',
+        message: 'Endpoint de upload funcional',
         data: response.data
       };
     } catch (error) {
