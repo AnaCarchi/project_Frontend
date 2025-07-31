@@ -50,12 +50,18 @@ export const imageService = {
         return null;
       }
 
-      const result = await ImagePicker.launchCameraAsync({
+      // Opciones para expo-image-picker 15.0.7
+      const options = {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
-      });
+      };
+
+      console.log('Opening camera with options:', options);
+      const result = await ImagePicker.launchCameraAsync(options);
+
+      console.log('Camera result:', result);
 
       if (!result.canceled && result.assets && result.assets[0]) {
         return result.assets[0];
@@ -63,7 +69,7 @@ export const imageService = {
       return null;
     } catch (error) {
       console.error('Error opening camera:', error);
-      Alert.alert('Error', 'No se pudo abrir la cámara');
+      Alert.alert('Error', 'No se pudo abrir la cámara: ' + error.message);
       return null;
     }
   },
@@ -77,12 +83,18 @@ export const imageService = {
         return null;
       }
 
-      const result = await ImagePicker.launchImageLibraryAsync({
+      // Opciones para expo-image-picker 15.0.7
+      const options = {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
-      });
+      };
+
+      console.log('Opening gallery with options:', options);
+      const result = await ImagePicker.launchImageLibraryAsync(options);
+
+      console.log('Gallery result:', result);
 
       if (!result.canceled && result.assets && result.assets[0]) {
         return result.assets[0];
@@ -90,7 +102,7 @@ export const imageService = {
       return null;
     } catch (error) {
       console.error('Error opening gallery:', error);
-      Alert.alert('Error', 'No se pudo abrir la galería');
+      Alert.alert('Error', 'No se pudo abrir la galería: ' + error.message);
       return null;
     }
   },
@@ -111,30 +123,41 @@ export const imageService = {
       return imageResult;
     } catch (error) {
       console.error('Error picking image:', error);
+      Alert.alert('Error', 'Error al seleccionar imagen: ' + error.message);
       return null;
     }
   },
 
   // Crear FormData para subida
   createFormData: (imageUri, fieldName = 'file') => {
-    const formData = new FormData();
-    
-    // Obtener extensión del archivo
-    const uriParts = imageUri.split('.');
-    const fileType = uriParts[uriParts.length - 1];
-    
-    formData.append(fieldName, {
-      uri: imageUri,
-      name: `image.${fileType}`,
-      type: `image/${fileType}`,
-    });
+    try {
+      const formData = new FormData();
+      
+      // Obtener extensión del archivo
+      const uriParts = imageUri.split('.');
+      const fileType = uriParts[uriParts.length - 1].toLowerCase();
+      
+      // Validar extensión
+      const validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+      const finalFileType = validExtensions.includes(fileType) ? fileType : 'jpg';
+      
+      formData.append(fieldName, {
+        uri: imageUri,
+        name: `image.${finalFileType}`,
+        type: `image/${finalFileType}`,
+      });
 
-    return formData;
+      return formData;
+    } catch (error) {
+      console.error('Error creating form data:', error);
+      throw new Error('Error preparando la imagen para subir');
+    }
   },
 
   // Subir imagen de producto
   uploadProductImage: async (productId, imageUri) => {
     try {
+      console.log('Uploading product image:', { productId, imageUri });
       const formData = imageService.createFormData(imageUri);
       
       const response = await api.post(`/products/${productId}/image`, formData, {
@@ -144,9 +167,13 @@ export const imageService = {
         timeout: 30000, // 30 segundos para imágenes
       });
 
+      console.log('Upload successful:', response.data);
       return response.data;
     } catch (error) {
       console.error('Error uploading product image:', error);
+      if (error.response) {
+        console.error('Server response:', error.response.data);
+      }
       throw new Error('No se pudo subir la imagen del producto');
     }
   },
@@ -154,6 +181,7 @@ export const imageService = {
   // Subir imagen de categoría
   uploadCategoryImage: async (categoryId, imageUri) => {
     try {
+      console.log('Uploading category image:', { categoryId, imageUri });
       const formData = imageService.createFormData(imageUri);
       
       const response = await api.post(`/categories/${categoryId}/image`, formData, {
@@ -163,9 +191,13 @@ export const imageService = {
         timeout: 30000,
       });
 
+      console.log('Upload successful:', response.data);
       return response.data;
     } catch (error) {
       console.error('Error uploading category image:', error);
+      if (error.response) {
+        console.error('Server response:', error.response.data);
+      }
       throw new Error('No se pudo subir la imagen de la categoría');
     }
   },
@@ -176,6 +208,11 @@ export const imageService = {
       return { valid: false, error: 'No se seleccionó ninguna imagen' };
     }
 
+    // Validar que tenga URI
+    if (!imageAsset.uri) {
+      return { valid: false, error: 'La imagen no es válida' };
+    }
+
     // Validar tamaño (máximo 10MB)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (imageAsset.fileSize && imageAsset.fileSize > maxSize) {
@@ -183,8 +220,10 @@ export const imageService = {
     }
 
     // Validar dimensiones mínimas
-    if (imageAsset.width < 100 || imageAsset.height < 100) {
-      return { valid: false, error: 'La imagen debe ser al menos de 100x100 píxeles' };
+    if (imageAsset.width && imageAsset.height) {
+      if (imageAsset.width < 100 || imageAsset.height < 100) {
+        return { valid: false, error: 'La imagen debe ser al menos de 100x100 píxeles' };
+      }
     }
 
     return { valid: true };
@@ -192,13 +231,8 @@ export const imageService = {
 
   // Comprimir imagen si es muy grande
   compressImage: async (imageUri) => {
-    try {
-      // Para la nueva versión de expo-image-picker, no necesitamos manipulateAsync
-      // ya que quality: 0.8 en las opciones ya comprime la imagen
-      return imageUri;
-    } catch (error) {
-      console.error('Error compressing image:', error);
-      return imageUri; // Retornar imagen original si falla la compresión
-    }
+    // La compresión se maneja automáticamente con la opción quality: 0.8
+    // en las opciones de ImagePicker, no necesitamos librerías adicionales
+    return imageUri;
   },
 };
